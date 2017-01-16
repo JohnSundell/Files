@@ -34,9 +34,10 @@ class FilesTests: XCTestCase {
     func testCreatingAndDeletingFile() {
         performTest {
             // Create a file and verify its properties
-            let file = try folder.createFile(named: "test")
-            XCTAssertEqual(file.name, "test")
-            XCTAssertEqual(file.path, folder.path + "test")
+            let file = try folder.createFile(named: "test.txt")
+            XCTAssertEqual(file.name, "test.txt")
+            XCTAssertEqual(file.path, folder.path + "test.txt")
+            XCTAssertEqual(file.extension, "txt")
             try XCTAssertEqual(file.read(), Data())
             
             // You should now be able to access the file using its path
@@ -78,10 +79,27 @@ class FilesTests: XCTestCase {
     
     func testRenamingFile() {
         performTest {
-            let file = try folder.createFile(named: "file")
+            let file = try folder.createFile(named: "file.json")
             try file.rename(to: "renamedFile")
-            XCTAssertEqual(file.name, "renamedFile")
-            XCTAssertEqual(file.path, folder.path + "renamedFile")
+            XCTAssertEqual(file.name, "renamedFile.json")
+            XCTAssertEqual(file.path, folder.path + "renamedFile.json")
+            XCTAssertEqual(file.extension, "json")
+            
+            // Now try renaming the file, replacing its extension
+            try file.rename(to: "other.txt", keepExtension: false)
+            XCTAssertEqual(file.name, "other.txt")
+            XCTAssertEqual(file.path, folder.path + "other.txt")
+            XCTAssertEqual(file.extension, "txt")
+        }
+    }
+    
+    func testRenamingFileWithNameIncludingExtension() {
+        performTest {
+            let file = try folder.createFile(named: "file.json")
+            try file.rename(to: "renamedFile.json")
+            XCTAssertEqual(file.name, "renamedFile.json")
+            XCTAssertEqual(file.path, folder.path + "renamedFile.json")
+            XCTAssertEqual(file.extension, "json")
         }
     }
     

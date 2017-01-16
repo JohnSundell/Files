@@ -122,8 +122,20 @@ public class FileSystem {
         
         /// The path of the item, relative to the root of the file system
         public private(set) var path: String
-        /// The name of the item (excluding any extension)
+        
+        /// The name of the item (including any extension)
         public private(set) var name: String
+        
+        /// Any extension that the item has
+        public var `extension`: String? {
+            let components = name.components(separatedBy: ".")
+            
+            guard components.count > 1 else {
+                return nil
+            }
+            
+            return components.last
+        }
         
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
@@ -178,21 +190,34 @@ public class FileSystem {
          *  Rename the item
          *
          *  - parameter newName: The new name that the item should have
+         *  - parameter keepExtension: Whether the file should keep the same extension as it had before (defaults to `true`)
          *
-         *  - throws: `Folder.OperationError.renameFailed` if the item couldn't be renamed
+         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
          */
-        public func rename(to newName: String) throws {
+        public func rename(to newName: String, keepExtension: Bool = true) throws {
             guard let parent = parent else {
                 throw OperationError.renameFailed(self)
             }
             
-            do {
-                var newPath = parent.path + newName
-                
-                if kind == .folder && !newPath.hasSuffix("/") {
-                    newPath += "/"
+            var newName = newName
+            
+            if keepExtension {
+                if let `extension` = `extension` {
+                    let extensionString = ".\(`extension`)"
+                    
+                    if !newName.hasSuffix(extensionString) {
+                        newName += extensionString
+                    }
                 }
-                
+            }
+            
+            var newPath = parent.path + newName
+            
+            if kind == .folder && !newPath.hasSuffix("/") {
+                newPath += "/"
+            }
+            
+            do {
                 try fileManager.moveItem(atPath: path, toPath: newPath)
                 
                 name = newName
@@ -207,7 +232,7 @@ public class FileSystem {
          *
          *  The item will be immediately deleted. If this is a folder, all of its contents will also be deleted.
          *
-         *  - throws: `Folder.OperationError.deleteFailed` if the item coudn't be deleted
+         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item coudn't be deleted
          */
         public func delete() throws {
             do {
