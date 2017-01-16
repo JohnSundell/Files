@@ -10,7 +10,6 @@
 		52D6D9871BEFF229002C0205 /* Files.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D97C1BEFF229002C0205 /* Files.framework */; };
 		52D6D9981BEFF375002C0205 /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Files.swift */; };
 		52D6D99B1BEFF375002C0205 /* FilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* FilesTests.swift */; };
-		52D6D9EA1BEFFFA4002C0205 /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Files.swift */; };
 		52D6DA091BF00081002C0205 /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Files.swift */; };
 		52D6DA261BF00118002C0205 /* Files.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9961BEFF375002C0205 /* Files.swift */; };
 		DD7502861C68FDDC006590AF /* FilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* FilesTests.swift */; };
@@ -48,7 +47,6 @@
 		52D6D9861BEFF229002C0205 /* Files-iOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Files-iOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9961BEFF375002C0205 /* Files.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Files.swift; path = Sources/Files.swift; sourceTree = "<group>"; };
 		52D6D9971BEFF375002C0205 /* FilesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FilesTests.swift; path = Tests/FilesTests/FilesTests.swift; sourceTree = "<group>"; };
-		52D6D9E21BEFFF6E002C0205 /* Files.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Files.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6D9F01BEFFFBE002C0205 /* Files.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Files.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6DA0F1BF000BD002C0205 /* Files.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Files.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD2FAA261CD0B6D800659CF4 /* Files.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Files.plist; sourceTree = "<group>"; };
@@ -70,13 +68,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				52D6D9871BEFF229002C0205 /* Files.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		52D6D9DE1BEFFF6E002C0205 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,7 +119,6 @@
 			children = (
 				52D6D97C1BEFF229002C0205 /* Files.framework */,
 				52D6D9861BEFF229002C0205 /* Files-iOS Tests.xctest */,
-				52D6D9E21BEFFF6E002C0205 /* Files.framework */,
 				52D6D9F01BEFFFBE002C0205 /* Files.framework */,
 				52D6DA0F1BF000BD002C0205 /* Files.framework */,
 				DD75027A1C68FCFC006590AF /* Files-macOS Tests.xctest */,
@@ -166,13 +156,6 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		52D6D9791BEFF229002C0205 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		52D6D9DF1BEFFF6E002C0205 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -231,24 +214,6 @@
 			productName = FilesTests;
 			productReference = 52D6D9861BEFF229002C0205 /* Files-iOS Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		52D6D9E11BEFFF6E002C0205 /* Files-watchOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 52D6D9E71BEFFF6E002C0205 /* Build configuration list for PBXNativeTarget "Files-watchOS" */;
-			buildPhases = (
-				52D6D9DD1BEFFF6E002C0205 /* Sources */,
-				52D6D9DE1BEFFF6E002C0205 /* Frameworks */,
-				52D6D9DF1BEFFF6E002C0205 /* Headers */,
-				52D6D9E01BEFFF6E002C0205 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "Files-watchOS";
-			productName = "Files-watchOS";
-			productReference = 52D6D9E21BEFFF6E002C0205 /* Files.framework */;
-			productType = "com.apple.product-type.framework";
 		};
 		52D6D9EF1BEFFFBE002C0205 /* Files-tvOS */ = {
 			isa = PBXNativeTarget;
@@ -330,17 +295,13 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
 				LastUpgradeCheck = 0810;
-				ORGANIZATIONNAME = "Files";
+				ORGANIZATIONNAME = Files;
 				TargetAttributes = {
 					52D6D97B1BEFF229002C0205 = {
 						CreatedOnToolsVersion = 7.1;
 						LastSwiftMigration = 0800;
 					};
 					52D6D9851BEFF229002C0205 = {
-						CreatedOnToolsVersion = 7.1;
-						LastSwiftMigration = 0800;
-					};
-					52D6D9E11BEFFF6E002C0205 = {
 						CreatedOnToolsVersion = 7.1;
 						LastSwiftMigration = 0800;
 					};
@@ -376,7 +337,6 @@
 			targets = (
 				52D6D97B1BEFF229002C0205 /* Files-iOS */,
 				52D6DA0E1BF000BD002C0205 /* Files-macOS */,
-				52D6D9E11BEFFF6E002C0205 /* Files-watchOS */,
 				52D6D9EF1BEFFFBE002C0205 /* Files-tvOS */,
 				52D6D9851BEFF229002C0205 /* Files-iOS Tests */,
 				DD7502791C68FCFC006590AF /* Files-macOS Tests */,
@@ -394,13 +354,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		52D6D9841BEFF229002C0205 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		52D6D9E01BEFFF6E002C0205 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -451,14 +404,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				52D6D99B1BEFF375002C0205 /* FilesTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		52D6D9DD1BEFFF6E002C0205 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				52D6D9EA1BEFFFA4002C0205 /* Files.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -681,51 +626,6 @@
 			};
 			name = Release;
 		};
-		52D6D9E81BEFFF6E002C0205 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/Files.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Files.Files-watchOS";
-				PRODUCT_NAME = Files;
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
-			};
-			name = Debug;
-		};
-		52D6D9E91BEFFF6E002C0205 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Configs/Files.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Files.Files-watchOS";
-				PRODUCT_NAME = Files;
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
-			};
-			name = Release;
-		};
 		52D6DA021BEFFFBE002C0205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -902,15 +802,6 @@
 			buildConfigurations = (
 				52D6D9941BEFF229002C0205 /* Debug */,
 				52D6D9951BEFF229002C0205 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		52D6D9E71BEFFF6E002C0205 /* Build configuration list for PBXNativeTarget "Files-watchOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				52D6D9E81BEFFF6E002C0205 /* Debug */,
-				52D6D9E91BEFFF6E002C0205 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
