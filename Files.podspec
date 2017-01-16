@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/johnsundell/files"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.author             = { "John Sundell" => "john@sundell.co" }
-  s.social_media_url   = ""
+  s.social_media_url   = "https://twitter.com/johnsundell"
   s.ios.deployment_target = "8.0"
   s.osx.deployment_target = "10.9"
   s.tvos.deployment_target = "9.0"
