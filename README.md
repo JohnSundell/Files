@@ -83,3 +83,7 @@ Either
 or
 
 - Use CocoaPods, Carthage or the Swift Package manager to include Files as a dependency in your project.
+
+## Questions or feedback?
+
+Feel free to [open an issue](https://github.com/JohnSundell/Files/issues/new), or find me [@johnsundell on Twitter](https://twitter.com/johnsundell).
