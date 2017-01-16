@@ -68,7 +68,7 @@ Files can be easily used in both a Swift script, command line tool or in an app 
 ### In a script
 
 - Write a Swift script in your favorite editor.
-- Concat your script with `Files.swift` and run it using `swift` (for example: `$ cat files.swift myScript.swift | swift -`).
+- Concat your script with `Files.swift` and run it using `swift` (for example: `$ cat Files.swift MyScript.swift | swift -`).
 
 ### In a command line tool
 
