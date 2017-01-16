@@ -12,9 +12,16 @@ Welcome to **Files**, a compact library that provides a nicer way to handle *fil
 
 ### Examples
 
-Easily iterate over the files contained in a folder
+Iterate over the files contained in a folder
 ```swift
-for file in try Folder(path: "MyFolder") {
+for file in try Folder(path: "MyFolder").files {
     print(file.name)
+}
+```
+
+Rename all files contained in a folder
+```swift
+try Folder(path: "MyFolder").files.enumerated().forEach { (index, file) in
+    try file.rename(to: file.nameWithoutExtension + "\(index)")
 }
 ```
