@@ -12,16 +12,39 @@ Welcome to **Files**, a compact library that provides a nicer way to handle *fil
 
 ### Examples
 
-Iterate over the files contained in a folder
+Iterate over the files contained in a folder:
 ```swift
 for file in try Folder(path: "MyFolder").files {
     print(file.name)
 }
 ```
 
-Rename all files contained in a folder
+Rename all files contained in a folder:
 ```swift
 try Folder(path: "MyFolder").files.enumerated().forEach { (index, file) in
     try file.rename(to: file.nameWithoutExtension + "\(index)")
 }
+```
+
+Recursively iterate over all folders in a tree:
+```swift
+FileSystem().homeFolder.makeSubfolderSequence(recursive: true).forEach { file in
+    print("Name : \(file.name), parent: \(file.parent)")
+}
+```
+
+Create, write and delete files and folders:
+```swift
+let folder = try Folder(path: "/users/john/folder")
+let file = try folder.createFile(named: "file.json")
+try file.write(data: wrap(object))
+try file.delete()
+try folder.delete()
+```
+
+Move all files in a folder to another:
+```swift
+let originFolder = try Folder(path: "/users/john/folderA")
+let targetFolder = try Folder(path: "/users/john/folderB")
+try originFolder.files.move(to: targetFolder)
 ```
