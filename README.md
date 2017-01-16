@@ -63,7 +63,7 @@ try originFolder.files.move(to: targetFolder)
 
 ## Usage
 
-Files can be easily used in both a Swift script, command line tool or in an app for iOS, macOS or tvOS.
+Files can be easily used in either a Swift script, command line tool or in an app for iOS, macOS or tvOS.
 
 ### In a script
 
@@ -83,6 +83,10 @@ Either
 or
 
 - Use CocoaPods, Carthage or the Swift Package manager to include Files as a dependency in your project.
+
+## Backstory
+
+So, why was this made? As I've migrated most of my build tools and other scripts from languages like Bash, Ruby and Python to Swift, I've found myself lacking an easy way to deal with the file system. Sure, `FileManager` has a quite nice API, but it can be quite cumbersome to use because of its string-based nature, which makes simple scripts that move or rename files quickly become quite complex. So, I made **Files**, to enable me to quickly handle files and folders, in an expressive way. And, since I love open source, I thought - why not package it up and share it with the community? :)
 
 ## Questions or feedback?
 
