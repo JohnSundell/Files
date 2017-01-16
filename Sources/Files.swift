@@ -87,6 +87,8 @@ public class FileSystem {
         public enum OperationError: Error, Equatable {
             /// Thrown when a file or folder couldn't be renamed (contains the item)
             case renameFailed(Item)
+            /// Thrown when a file or folder couldn't be moved (contains the item)
+            case moveFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
             
@@ -97,12 +99,25 @@ public class FileSystem {
                     switch rhs {
                     case .renameFailed(let itemB):
                         return itemA == itemB
+                    case .moveFailed(_):
+                        return false
+                    case .deleteFailed(_):
+                        return false
+                    }
+                case .moveFailed(let itemA):
+                    switch rhs {
+                    case .renameFailed(_):
+                        return false
+                    case .moveFailed(let itemB):
+                        return itemA == itemB
                     case .deleteFailed(_):
                         return false
                     }
                 case .deleteFailed(let itemA):
                     switch rhs {
                     case .renameFailed(_):
+                        return false
+                    case .moveFailed(_):
                         return false
                     case .deleteFailed(let itemB):
                         return itemA == itemB
@@ -234,6 +249,24 @@ public class FileSystem {
                 path = newPath
             } catch {
                 throw OperationError.renameFailed(self)
+            }
+        }
+        
+        /**
+         *  Move this item to a new folder
+         *
+         *  - parameter newParent: The new parent folder that the item should be moved to
+         *
+         *  - throws: `FileSystem.Item.OperationError.moveFailed` if the item couldn't be moved
+         */
+        public func move(to newParent: Folder) throws {
+            let newPath = newParent.path + name
+            
+            do {
+                try fileManager.moveItem(atPath: path, toPath: newPath)
+                path = newPath
+            } catch {
+                throw OperationError.moveFailed(self)
             }
         }
         
@@ -521,6 +554,11 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
     /// Create an iterator to use to iterate over the sequence
     public func makeIterator() -> FileSystemIterator<T> {
         return FileSystemIterator(path: path, recursive: recursive, using: fileManager)
+    }
+    
+    /// Move all the items in this sequence to a new folder. See `FileSystem.Item.move(to:)` for more info.
+    public func move(to newParent: Folder) throws {
+        try forEach { try $0.move(to: newParent) }
     }
 }
 

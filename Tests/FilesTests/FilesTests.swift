@@ -113,6 +113,20 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testMovingFiles() {
+        performTest {
+            try folder.createFile(named: "A")
+            try folder.createFile(named: "B")
+            XCTAssertEqual(folder.files.count, 2)
+            
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try folder.files.move(to: subfolder)
+            try XCTAssertNotNil(subfolder.file(named: "A"))
+            try XCTAssertNotNil(subfolder.file(named: "B"))
+            XCTAssertEqual(folder.files.count, 0)
+        }
+    }
+    
     func testEnumeratingFiles() {
         performTest {
             try folder.createFile(named: "1")
