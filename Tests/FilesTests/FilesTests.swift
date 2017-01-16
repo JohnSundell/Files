@@ -38,6 +38,7 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.name, "test.txt")
             XCTAssertEqual(file.path, folder.path + "test.txt")
             XCTAssertEqual(file.extension, "txt")
+            XCTAssertEqual(file.nameExcludingExtension, "test")
             try XCTAssertEqual(file.read(), Data())
             
             // You should now be able to access the file using its path

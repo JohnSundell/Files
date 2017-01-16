@@ -126,6 +126,16 @@ public class FileSystem {
         /// The name of the item (including any extension)
         public private(set) var name: String
         
+        /// The name of the item (excluding any extension)
+        public var nameExcludingExtension: String {
+            guard let `extension` = `extension` else {
+                return name
+            }
+            
+            let startIndex = name.index(name.startIndex, offsetBy: `extension`.characters.count + 1)
+            return name.replacingCharacters(in: startIndex..<name.endIndex, with: "")
+        }
+        
         /// Any extension that the item has
         public var `extension`: String? {
             let components = name.components(separatedBy: ".")
