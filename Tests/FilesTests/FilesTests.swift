@@ -76,6 +76,24 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testRenamingFile() {
+        performTest {
+            let file = try folder.createFile(named: "file")
+            try file.rename(to: "renamedFile")
+            XCTAssertEqual(file.name, "renamedFile")
+            XCTAssertEqual(file.path, folder.path + "renamedFile")
+        }
+    }
+    
+    func testRenamingFolder() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try subfolder.rename(to: "renamedFolder")
+            XCTAssertEqual(subfolder.name, "renamedFolder")
+            XCTAssertEqual(subfolder.path, folder.path + "renamedFolder/")
+        }
+    }
+    
     func testEnumeratingFiles() {
         performTest {
             try folder.createFile(named: "1")

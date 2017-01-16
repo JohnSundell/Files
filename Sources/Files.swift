@@ -85,14 +85,25 @@ public class FileSystem {
         
         /// Error type used for failed operations run on files or folders
         public enum OperationError: Error, Equatable {
+            /// Thrown when a file or folder couldn't be renamed (contains the item)
+            case renameFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
                 switch lhs {
+                case .renameFailed(let itemA):
+                    switch rhs {
+                    case .renameFailed(let itemB):
+                        return itemA == itemB
+                    case .deleteFailed(_):
+                        return false
+                    }
                 case .deleteFailed(let itemA):
                     switch rhs {
+                    case .renameFailed(_):
+                        return false
                     case .deleteFailed(let itemB):
                         return itemA == itemB
                     }
@@ -160,6 +171,34 @@ public class FileSystem {
                 self.name = pathComponents.last!
             case .folder:
                 self.name = pathComponents[pathComponents.count - 2]
+            }
+        }
+        
+        /**
+         *  Rename the item
+         *
+         *  - parameter newName: The new name that the item should have
+         *
+         *  - throws: `Folder.OperationError.renameFailed` if the item couldn't be renamed
+         */
+        public func rename(to newName: String) throws {
+            guard let parent = parent else {
+                throw OperationError.renameFailed(self)
+            }
+            
+            do {
+                var newPath = parent.path + newName
+                
+                if kind == .folder && !newPath.hasSuffix("/") {
+                    newPath += "/"
+                }
+                
+                try fileManager.moveItem(atPath: path, toPath: newPath)
+                
+                name = newName
+                path = newPath
+            } catch {
+                throw OperationError.renameFailed(self)
             }
         }
         
