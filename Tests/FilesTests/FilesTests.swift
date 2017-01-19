@@ -192,6 +192,17 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testFirstAndLastInFileSequence() {
+        performTest {
+            try folder.createFile(named: "A")
+            try folder.createFile(named: "B")
+            try folder.createFile(named: "C")
+            
+            XCTAssertEqual(folder.files.first?.name, "A")
+            XCTAssertEqual(folder.files.last?.name, "C")
+        }
+    }
+    
     func testParent() {
         performTest {
             try XCTAssertEqual(folder.createFile(named: "test").parent, folder)

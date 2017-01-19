@@ -541,6 +541,18 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
         return map { $0.name }
     }
     
+    /// The first item of the sequence. Accessing this causes the sequence to be evaluated until an item is found
+    public var first: T? {
+        return makeIterator().next()
+    }
+    
+    /// The last item of the sequence. Accessing this causes the sequence to be evaluated.
+    public var last: T? {
+        var item: T?
+        forEach { item = $0 }
+        return item
+    }
+    
     private let path: String
     private let recursive: Bool
     private let fileManager: FileManager
