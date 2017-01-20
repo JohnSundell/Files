@@ -133,8 +133,22 @@ class FilesTests: XCTestCase {
             try folder.createFile(named: "2")
             try folder.createFile(named: "3")
             
+            // Hidden files should be excluded by default
+            try folder.createFile(named: ".hidden")
+            
             XCTAssertEqual(folder.files.names, ["1", "2", "3"])
             XCTAssertEqual(folder.files.count, 3)
+        }
+    }
+    
+    func testEnumeratingFilesIncludingHidden() {
+        performTest {
+            try folder.createFile(named: ".hidden")
+            try folder.createFile(named: "visible")
+            
+            let files = folder.makeFileSequence(includeHidden: true)
+            XCTAssertEqual(files.names, [".hidden", "visible"])
+            XCTAssertEqual(files.count, 2)
         }
     }
     
