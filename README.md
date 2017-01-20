@@ -3,11 +3,14 @@
 </p>
 
 <p align="center">
-    <a href="https://cocoapods.org/pods/Unbox">
+    <a href="https://cocoapods.org/pods/Files">
         <img src="https://img.shields.io/cocoapods/v/Files.svg" alt="CocoaPods" />
     </a>
     <a href="https://github.com/Carthage/Carthage">
         <img src="https://img.shields.io/badge/carthage-compatible-4BC51D.svg?style=flat" alt="Carthage" />
+    </a>
+    <a href="https://swift.org/package-manager">
+        <img src="https://img.shields.io/badge/SwiftPM-Compatible-brightgreen.svg" alt="Swift Package Manager" />
     </a>
     <a href="https://twitter.com/johnsundell">
         <img src="https://img.shields.io/badge/contact-@johnsundell-blue.svg?style=flat" alt="Twitter: @johnsundell" />
