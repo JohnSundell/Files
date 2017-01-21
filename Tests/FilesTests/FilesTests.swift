@@ -286,6 +286,13 @@ class FilesTests: XCTestCase {
         XCTAssertNotNil(FileSystem().homeFolder)
     }
     
+    func testNameExcludingExtensionWithLongFileName() {
+        performTest {
+            let file = try folder.createFile(named: "AVeryLongFileName.png")
+            XCTAssertEqual(file.nameExcludingExtension, "AVeryLongFileName")
+        }
+    }
+    
     func testUsingCustomFileManager() {
         class FileManagerMock: FileManager {
             var noFilesExist = false

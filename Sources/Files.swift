@@ -147,7 +147,7 @@ public class FileSystem {
                 return name
             }
             
-            let startIndex = name.index(name.startIndex, offsetBy: `extension`.characters.count + 1)
+            let startIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
             return name.replacingCharacters(in: startIndex..<name.endIndex, with: "")
         }
         
