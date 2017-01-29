@@ -66,7 +66,7 @@ try originFolder.files.move(to: targetFolder)
 
 ## Usage
 
-Files can be easily used in either a Swift script, command line tool or in an app for iOS, macOS or tvOS.
+Files can be easily used in either a Swift script, command line tool or in an app for iOS, macOS, tvOS or Linux.
 
 ### In a script
 
