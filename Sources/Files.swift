@@ -658,14 +658,8 @@ private extension FileManager {
         guard fileExists(atPath: path, isDirectory: &objCBool) else {
             return nil
         }
-        
-#if os(Linux)
-        let isFolder = Bool(objCBool)
-#else
-        let isFolder = objCBool.boolValue
-#endif
 
-        if isFolder {
+        if objCBool.boolValue {
             return .folder
         }
         
@@ -690,3 +684,9 @@ private extension String {
         return components(separatedBy: "/")
     }
 }
+
+#if os(Linux)
+private extension ObjCBool {
+    var boolValue: Bool { return Bool(self) }
+}
+#endif
