@@ -293,7 +293,8 @@ public class FileSystem {
     
     /// A reference to the current user's home folder
     public var homeFolder: Folder {
-        return try! Folder(path: NSHomeDirectory(), using: fileManager)
+        let path = ProcessInfo.processInfo.environment["HOME"]!
+        return try! Folder(path: path, using: fileManager)
     }
     
     /**
