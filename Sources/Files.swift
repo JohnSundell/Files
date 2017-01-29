@@ -659,7 +659,13 @@ private extension FileManager {
             return nil
         }
         
-        if Bool(objCBool) {
+#if os(Linux)
+        let isFolder = Bool(objCBool)
+#else
+        let isFolder = objCBool.boolValue
+#endif
+
+        if isFolder {
             return .folder
         }
         
