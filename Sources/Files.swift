@@ -193,6 +193,8 @@ public class FileSystem {
                 throw PathError.empty
             }
             
+            let path = fileManager.absolutePath(for: path)
+            
             guard fileManager.itemKind(atPath: path) == kind else {
                 throw PathError.invalid(path)
             }
@@ -672,6 +674,14 @@ private extension FileManager {
         } catch {
             return []
         }
+    }
+    
+    func absolutePath(for path: String) -> String {
+        if path.hasPrefix("/") {
+            return path
+        }
+        
+        return currentDirectoryPath + "/" + path
     }
 }
 

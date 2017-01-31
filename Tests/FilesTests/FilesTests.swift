@@ -104,6 +104,20 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testReadingFileWithRelativePath() {
+        performTest {
+            try folder.createFile(named: "file")
+            
+            // Before moving to the parent folder, accessing the file with a relative path should produce nil
+            XCTAssertNil(try? File(path: "file"))
+            
+            // Move to the parent directory, now a relative path should work
+            XCTAssertTrue(FileManager.default.changeCurrentDirectoryPath(folder.path))
+            let file = try File(path: "file")
+            try XCTAssertEqual(file.read(), Data())
+        }
+    }
+    
     func testRenamingFolder() {
         performTest {
             let subfolder = try folder.createSubfolder(named: "folder")
