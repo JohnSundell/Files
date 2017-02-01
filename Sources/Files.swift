@@ -35,7 +35,7 @@ import Foundation
  *  To open other files & folders, use the `File` and `Folder` class respectively.
  */
 public class FileSystem {
-    private let fileManager: FileManager
+    fileprivate let fileManager: FileManager
 
     /**
      *  Class that represents an item that's stored by a file system
@@ -712,5 +712,27 @@ private extension ProcessInfo {
 #if os(Linux)
 private extension ObjCBool {
     var boolValue: Bool { return Bool(self) }
+}
+#endif
+
+#if !os(Linux)
+extension FileSystem {
+    /// A reference to the document folder used by this file system.
+    public var documentFolder: Folder? {
+        guard let url = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) else {
+            return nil
+        }
+        
+        return try? Folder(path: url.path, using: fileManager)
+    }
+    
+    /// A reference to the library folder used by this file system.
+    public var libraryFolder: Folder? {
+        guard let url = try? fileManager.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: false) else {
+            return nil
+        }
+        
+        return try? Folder(path: url.path, using: fileManager)
+    }
 }
 #endif
