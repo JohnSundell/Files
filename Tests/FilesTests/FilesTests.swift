@@ -117,6 +117,15 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testReadingFileWithTildePath() {
+        performTest {
+            try FileSystem().homeFolder.createFile(named: "file")
+            let file = try File(path: "~/file")
+            try XCTAssertEqual(file.read(), Data())
+            XCTAssertEqual(file.path, FileSystem().homeFolder.path + "file")
+        }
+    }
+    
     func testRenamingFolder() {
         performTest {
             let subfolder = try folder.createSubfolder(named: "folder")

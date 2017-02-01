@@ -295,8 +295,7 @@ public class FileSystem {
     
     /// A reference to the current user's home folder
     public var homeFolder: Folder {
-        let path = ProcessInfo.processInfo.environment["HOME"]!
-        return try! Folder(path: path, using: fileManager)
+        return try! Folder(path: ProcessInfo.processInfo.homeFolderPath, using: fileManager)
     }
     
     /**
@@ -681,6 +680,15 @@ private extension FileManager {
             return path
         }
         
+        if path.hasPrefix("~") {
+            let prefixEndIndex = path.index(after: path.startIndex)
+            
+            return path.replacingCharacters(
+                in: path.startIndex..<prefixEndIndex,
+                with: ProcessInfo.processInfo.homeFolderPath
+            )
+        }
+        
         return currentDirectoryPath + "/" + path
     }
 }
@@ -692,6 +700,12 @@ private extension String {
     
     var pathComponents: [String] {
         return components(separatedBy: "/")
+    }
+}
+
+private extension ProcessInfo {
+    var homeFolderPath: String {
+        return environment["HOME"]!
     }
 }
 
