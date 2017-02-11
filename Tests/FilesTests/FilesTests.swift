@@ -363,4 +363,50 @@ class FilesTests: XCTestCase {
             XCTFail("Unexpected error type: \(type(of: error))")
         }
     }
+    
+    // MARK: - Linux
+    
+    static var allTests = [
+        ("testCreatingAndDeletingFile", testCreatingAndDeletingFile),
+        ("testCreatingAndDeletingFolder", testCreatingAndDeletingFolder),
+        ("testRenamingFile", testRenamingFile),
+        ("testRenamingFileWithNameIncludingExtension", testRenamingFileWithNameIncludingExtension),
+        ("testReadingFileWithRelativePath", testReadingFileWithRelativePath),
+        ("testReadingFileWithTildePath", testReadingFileWithTildePath),
+        ("testRenamingFolder", testRenamingFolder),
+        ("testMovingFiles", testMovingFiles),
+        ("testEnumeratingFiles", testEnumeratingFiles),
+        ("testEnumeratingFilesIncludingHidden", testEnumeratingFilesIncludingHidden),
+        ("testEnumeratingFilesRecursively", testEnumeratingFilesRecursively),
+        ("testEnumeratingSubfolders", testEnumeratingSubfolders),
+        ("testEnumeratingSubfoldersRecursively", testEnumeratingSubfoldersRecursively),
+        ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
+        ("testParent", testParent),
+        ("testRootFolderParentIsNil", testRootFolderParentIsNil),
+        ("testOpeningFileWithEmptyPathThrows", testOpeningFileWithEmptyPathThrows),
+        ("testDeletingNonExistingFileThrows", testDeletingNonExistingFileThrows),
+        ("testWritingDataToFile", testWritingDataToFile),
+        ("testWritingStringToFile", testWritingStringToFile),
+        ("testFileDescription", testFileDescription),
+        ("testFolderDescription", testFolderDescription),
+        ("testAccessingHomeFolder", testAccessingHomeFolder),
+        ("testNameExcludingExtensionWithLongFileName", testNameExcludingExtensionWithLongFileName),
+        ("testUsingCustomFileManager", testUsingCustomFileManager)
+    ]
 }
+
+#if !os(Linux)
+extension FilesTests {
+    func testAccessingDocumentFolder() {
+        #if os(tvOS)
+            XCTAssertNil(FileSystem().documentFolder, "Document folder should not be available on tvOS.")
+        #else
+            XCTAssertNotNil(FileSystem().documentFolder, "Document folder should be available.")
+        #endif
+    }
+    
+    func testAccessingLibraryFolder() {
+        XCTAssertNotNil(FileSystem().libraryFolder, "Library folder should be available.")
+    }
+}
+#endif
