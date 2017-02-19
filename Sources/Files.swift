@@ -306,6 +306,23 @@ public class FileSystem {
     public init(using fileManager: FileManager = .default) {
         self.fileManager = fileManager
     }
+
+    /**
+     *  Create a new folder at a given path
+     *
+     *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
+     *                    parent folders, those will be created as well.
+     *
+     *  - throws: `Folder.Error.creatingFolderFailed`
+     */
+    @discardableResult public func createFolder(at path: String) throws -> Folder {
+        do {
+            try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+            return try Folder(path: path, using: fileManager)
+        } catch {
+            throw Folder.Error.creatingFolderFailed
+        }
+    }
 }
 
 /**
@@ -388,7 +405,10 @@ public final class File: FileSystem.Item, FileSystemIterable {
 public final class Folder: FileSystem.Item, FileSystemIterable {
     /// Error type specific to folder-related operations
     public enum Error: Swift.Error {
-        /// Thrown when a subfolder couldn't be created
+        /// Thrown when a folder couldn't be created
+        case creatingFolderFailed
+
+        @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
         case creatingSubfolderFailed
     }
     
@@ -470,7 +490,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to create
      *
-     *  - throws: `Folder.Error.creatingSubfolderFailed` if the subfolder couldn't be created
+     *  - throws: `Folder.Error.creatingFolderFailed` if the subfolder couldn't be created
      *
      *  - returns: The folder that was created
      */
@@ -481,7 +501,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.createDirectory(atPath: subfolderPath, withIntermediateDirectories: false, attributes: nil)
             return try Folder(path: subfolderPath, using: fileManager)
         } catch {
-            throw Error.creatingSubfolderFailed
+            throw Error.creatingFolderFailed
         }
     }
     

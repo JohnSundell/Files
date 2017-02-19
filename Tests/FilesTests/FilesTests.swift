@@ -343,6 +343,14 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.nameExcludingExtension, "AVeryLongFileName")
         }
     }
+
+    func testCreatingFolderFromFileSystem() {
+        performTest {
+            let folderPath = folder.path + "one/two/three"
+            try FileSystem().createFolder(at: folderPath)
+            _ = try Folder(path: folderPath)
+        }
+    }
     
     func testUsingCustomFileManager() {
         class FileManagerMock: FileManager {
