@@ -512,11 +512,13 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     /**
      *  Empty this folder, removing all of its content
      *
+     *  - parameter includeHidden: Whether hidden files (dot) files contained within the folder should also be removed
+     *
      *  This will still keep the folder itself on disk. If you wish to delete the folder as well, call `delete()` on it.
      */
-    public func empty() throws {
-        try files.forEach { try $0.delete() }
-        try subfolders.forEach { try $0.delete() }
+    public func empty(includeHidden: Bool = false) throws {
+        try makeFileSequence(includeHidden: includeHidden).forEach { try $0.delete() }
+        try makeSubfolderSequence(includeHidden: includeHidden).forEach { try $0.delete() }
     }
 }
 

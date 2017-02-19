@@ -134,6 +134,34 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(subfolder.path, folder.path + "renamedFolder/")
         }
     }
+
+    func testEmptyingFolder() {
+        performTest {
+            try folder.createFile(named: "A")
+            try folder.createFile(named: "B")
+            XCTAssertEqual(folder.files.count, 2)
+
+            try folder.empty()
+            XCTAssertEqual(folder.files.count, 0)
+        }
+    }
+
+    func testEmptyingFolderWithHiddenFiles() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "folder")
+
+            try subfolder.createFile(named: "A")
+            try subfolder.createFile(named: ".B")
+            XCTAssertEqual(subfolder.makeFileSequence(includeHidden: true).count, 2)
+
+            // Per default, hidden files should not be deleted
+            try subfolder.empty()
+            XCTAssertEqual(subfolder.makeFileSequence(includeHidden: true).count, 1)
+
+            try subfolder.empty(includeHidden: true)
+            XCTAssertEqual(folder.files.count, 0)
+        }
+    }
     
     func testMovingFiles() {
         performTest {
