@@ -332,6 +332,27 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(subfolder.description, "Folder(name: folder, path: \(folder.path)folder/)")
         }
     }
+
+    func testMovingFolderContents() {
+        performTest {
+            let parentFolder = try folder.createSubfolder(named: "parentA")
+            try parentFolder.createSubfolder(named: "folderA")
+            try parentFolder.createSubfolder(named: "folderB")
+            try parentFolder.createFile(named: "fileA")
+            try parentFolder.createFile(named: "fileB")
+
+            XCTAssertEqual(parentFolder.subfolders.names, ["folderA", "folderB"])
+            XCTAssertEqual(parentFolder.files.names, ["fileA", "fileB"])
+
+            let newParentFolder = try folder.createSubfolder(named: "parentB")
+            try parentFolder.moveContents(to: newParentFolder)
+
+            XCTAssertEqual(parentFolder.subfolders.names, [])
+            XCTAssertEqual(parentFolder.files.names, [])
+            XCTAssertEqual(newParentFolder.subfolders.names, ["folderA", "folderB"])
+            XCTAssertEqual(newParentFolder.files.names, ["fileA", "fileB"])
+        }
+    }
     
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)

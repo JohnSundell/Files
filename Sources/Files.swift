@@ -528,6 +528,16 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public func makeSubfolderSequence(recursive: Bool = false, includeHidden: Bool = false) -> FileSystemSequence<Folder> {
         return FileSystemSequence(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
     }
+
+    /**
+     *  Move the contents (both files and subfolders) of this folder to a new parent folder
+     *
+     *  - parameter newParent: The new parent folder that the contents of this folder should be moved to
+     */
+    public func moveContents(to newParent: Folder) throws {
+        try files.forEach { try $0.move(to: newParent) }
+        try subfolders.forEach { try $0.move(to: newParent) }
+    }
     
     /**
      *  Empty this folder, removing all of its content
