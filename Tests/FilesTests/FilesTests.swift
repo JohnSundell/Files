@@ -383,6 +383,17 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(subfolderA.files.first, subfolderB.files.first)
         }
     }
+
+    func testCreateSubfolderIfNeeded() {
+        performTest {
+            let subfolderA = try folder.createSubfolderIfNeeded(withName: "folder")
+            try subfolderA.createFile(named: "file")
+            let subfolderB = try folder.createSubfolderIfNeeded(withName: "folder")
+            XCTAssertEqual(subfolderA, subfolderB)
+            XCTAssertEqual(subfolderA.files.count, subfolderB.files.count)
+            XCTAssertEqual(subfolderA.files.first, subfolderB.files.first)
+        }
+    }
     
     func testUsingCustomFileManager() {
         class FileManagerMock: FileManager {

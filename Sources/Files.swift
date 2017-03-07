@@ -520,6 +520,21 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             throw Error.creatingFolderFailed
         }
     }
+
+    /**
+     *  Either return an existing subfolder, or create a new one, for a given name
+     *
+     *  - parameter folderName: The name of the folder to either get or create
+     *
+     *  - throws: `Folder.Error.creatingFolderFailed`
+     */
+    public func createSubfolderIfNeeded(withName folderName: String) throws -> Folder {
+        if let existingFolder = try? subfolder(named: folderName) {
+            return existingFolder
+        }
+
+        return try createSubfolder(named: folderName)
+    }
     
     /**
      *  Create a sequence containing the files that are contained within this folder
