@@ -323,6 +323,22 @@ public class FileSystem {
             throw Folder.Error.creatingFolderFailed
         }
     }
+
+    /**
+     *  Either return an existing folder, or create a new one, at a given path
+     *
+     *  - parameter path: The path for which a folder should either be returned or created at. If the folder
+     *                    is missing, any intermediate parent folders will also be created.
+     *
+     *  - throws: `Folder.Error.creatingFolderFailed`
+     */
+    public func createFolderIfNeeded(at path: String) throws -> Folder {
+        if let existingFolder = try? Folder(path: path, using: fileManager) {
+            return existingFolder
+        }
+
+        return try createFolder(at: path)
+    }
 }
 
 /**
