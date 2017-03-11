@@ -317,7 +317,8 @@ public class FileSystem {
      */
     @discardableResult public func createFolder(at path: String) throws -> Folder {
         do {
-            try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+            let absolutePath = fileManager.absolutePath(for: path)
+            try fileManager.createDirectory(atPath: absolutePath, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
             throw Folder.Error.creatingFolderFailed

@@ -136,10 +136,13 @@ class FilesTests: XCTestCase {
     
     func testReadingFileWithTildePath() {
         performTest {
-            try FileSystem().homeFolder.createFile(named: "file")
-            let file = try File(path: "~/file")
+            try FileSystem().homeFolder.createFile(named: ".filestest")
+            let file = try File(path: "~/.filestest")
             try XCTAssertEqual(file.read(), Data())
-            XCTAssertEqual(file.path, FileSystem().homeFolder.path + "file")
+            XCTAssertEqual(file.path, FileSystem().homeFolder.path + ".filestest")
+
+            // Cleanup since we're performing a test in the actual home folder
+            try file.delete()
         }
     }
     
@@ -405,6 +408,17 @@ class FilesTests: XCTestCase {
             let folderPath = folder.path + "one/two/three"
             try FileSystem().createFolder(at: folderPath)
             _ = try Folder(path: folderPath)
+        }
+    }
+
+    func testCreatingFolderWithTildePathFromFileSystem() {
+        performTest {
+            let fileSystem = FileSystem()
+            try fileSystem.createFolder(at: "~/.filestest")
+            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filestest")
+
+            // Cleanup since we're performing a test in the actual home folder
+            try createdFolder.delete()
         }
     }
 
