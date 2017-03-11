@@ -380,6 +380,32 @@ public final class File: FileSystem.Item, FileSystemIterable {
             throw Error.readFailed
         }
     }
+
+    /**
+     *  Read the data contained within this file, and convert it to a string
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a string
+     */
+    public func readAsString(encoding: String.Encoding = .utf8) throws -> String {
+        guard let string = try String(data: read(), encoding: encoding) else {
+            throw Error.readFailed
+        }
+
+        return string
+    }
+
+    /**
+     *  Read the data contained within this file, and convert it to an int
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as an int
+     */
+    public func readAsInt() throws -> Int {
+        guard let int = try Int(readAsString()) else {
+            throw Error.readFailed
+        }
+
+        return int
+    }
     
     /**
      *  Write data to the file, replacing its current content

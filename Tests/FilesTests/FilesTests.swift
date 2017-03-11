@@ -77,6 +77,23 @@ class FilesTests: XCTestCase {
             try assert(file.read(), throwsError: File.Error.readFailed)
         }
     }
+
+    func testReadingFileAsString() {
+        performTest {
+            let file = try folder.createFile(named: "string", contents: "Hello".data(using: .utf8)!)
+            try XCTAssertEqual(file.readAsString(), "Hello")
+        }
+    }
+
+    func testReadingFileAsInt() {
+        performTest {
+            let intFile = try folder.createFile(named: "int", contents: "\(7)".data(using: .utf8)!)
+            try XCTAssertEqual(intFile.readAsInt(), 7)
+
+            let nonIntFile = try folder.createFile(named: "nonInt", contents: "Not an int".data(using: .utf8)!)
+            try assert(nonIntFile.readAsInt(), throwsError: File.Error.readFailed)
+        }
+    }
     
     func testRenamingFile() {
         performTest {
