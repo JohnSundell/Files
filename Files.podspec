@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Files"
-  s.version      = "1.5.3"
+  s.version      = "1.5.4"
   s.summary      = "A nicer way to handle files & folders in Swift"
   s.description  = <<-DESC
     Files is a compact library that provides a nicer way to handle files and folders in Swift. It’s primarily aimed at Swift scripting and tooling, but can also be embedded in applications that need to access the file system. It's essentially a thin wrapper around the FileManager APIs that Foundation provides.
