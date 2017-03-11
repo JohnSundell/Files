@@ -408,6 +408,15 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testCreateFileIfNeeded() {
+        performTest {
+            let fileA = try folder.createFileIfNeeded(withName: "file", contents: "Hello".data(using: .utf8)!)
+            let fileB = try folder.createFileIfNeeded(withName: "file", contents: "World".data(using: .utf8)!)
+            try XCTAssertEqual(fileA.readAsString(), "Hello")
+            try XCTAssertEqual(fileA.read(), fileB.read())
+        }
+    }
+
     func testCreateFolderIfNeeded() {
         performTest {
             let subfolderA = try FileSystem().createFolderIfNeeded(at: folder.path + "one/two/three")

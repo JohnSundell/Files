@@ -548,6 +548,23 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         
         return try File(path: filePath, using: fileManager)
     }
+
+    /**
+     *  Either return an existing file, or create a new one, for a given name
+     *
+     *  - parameter fileName: The name of the file to either get or create
+     *  - parameter dataExpression: An expression resulting in any data that a new file should contain.
+     *                              Will only be evaluated & used in case a new file is created.
+     *
+     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     */
+    public func createFileIfNeeded(withName fileName: String, contents dataExpression: @autoclosure () -> Data = .init()) throws -> File {
+        if let existingFile = try? file(named: fileName) {
+            return existingFile
+        }
+
+        return try createFile(named: fileName, contents: dataExpression())
+    }
     
     /**
      *  Create a subfolder of this folder and return it
