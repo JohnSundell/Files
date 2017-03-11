@@ -495,6 +495,17 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public func file(named fileName: String) throws -> File {
         return try File(path: path + fileName, using: fileManager)
     }
+
+    /**
+     *  Return a file at a given path that is contained in this folder's tree
+     *
+     *  - parameter filePath: The subpath of the file to return. Relative to this folder.
+     *
+     *  - throws: `File.PathError.invalid` if the file couldn't be found
+     */
+    public func file(atPath filePath: String) throws -> File {
+        return try File(path: path + filePath, using: fileManager)
+    }
     
     /**
      *  Return a folder with a given name that is contained in this folder
@@ -510,8 +521,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     /**
      *  Return a folder at a given path that is contained in this folder's tree
      *
-     *  - parameter folderPath: The subpath of the folder to return. Relative to
-     *                          this folder.
+     *  - parameter folderPath: The subpath of the folder to return. Relative to this folder.
      *
      *  - throws: `Folder.PathError.invalid` if the folder couldn't be found
      */

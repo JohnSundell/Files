@@ -152,6 +152,15 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testAccesingFileByPath() {
+        performTest {
+            let subfolderA = try folder.createSubfolder(named: "A")
+            let subfolderB = try subfolderA.createSubfolder(named: "B")
+            let file = try subfolderB.createFile(named: "C")
+            try XCTAssertEqual(folder.file(atPath: "A/B/C"), file)
+        }
+    }
+
     func testAccessingSubfolderByPath() {
         performTest {
             let subfolderA = try folder.createSubfolder(named: "A")
