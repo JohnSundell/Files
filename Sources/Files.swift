@@ -297,6 +297,11 @@ public class FileSystem {
     public var homeFolder: Folder {
         return try! Folder(path: ProcessInfo.processInfo.homeFolderPath, using: fileManager)
     }
+
+    // A reference to the folder that is the current working directory
+    public var currentFolder: Folder {
+        return try! Folder(path: "")
+    }
     
     /**
      *  Initialize an instance of this class
@@ -479,7 +484,9 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         
         if path.isEmpty {
             path = fileManager.currentDirectoryPath
-        } else if !path.hasSuffix("/") {
+        }
+
+        if !path.hasSuffix("/") {
             path += "/"
         }
         

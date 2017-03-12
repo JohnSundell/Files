@@ -395,6 +395,14 @@ class FilesTests: XCTestCase {
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)
     }
+
+    func testAccessingCurrentWorkingDirectory() {
+        performTest {
+            let folder = try Folder(path: "")
+            XCTAssertEqual(FileManager.default.currentDirectoryPath + "/", folder.path)
+            XCTAssertEqual(FileSystem().currentFolder, folder)
+        }
+    }
     
     func testNameExcludingExtensionWithLongFileName() {
         performTest {
