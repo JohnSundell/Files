@@ -338,7 +338,7 @@ public class FileSystem {
      *
      *  - throws: `Folder.Error.creatingFolderFailed`
      */
-    public func createFolderIfNeeded(at path: String) throws -> Folder {
+    @discardableResult public func createFolderIfNeeded(at path: String) throws -> Folder {
         if let existingFolder = try? Folder(path: path, using: fileManager) {
             return existingFolder
         }
@@ -566,7 +566,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - throws: `File.Error.writeFailed` if the file couldn't be created
      */
-    public func createFileIfNeeded(withName fileName: String, contents dataExpression: @autoclosure () -> Data = .init()) throws -> File {
+    @discardableResult public func createFileIfNeeded(withName fileName: String, contents dataExpression: @autoclosure () -> Data = .init()) throws -> File {
         if let existingFile = try? file(named: fileName) {
             return existingFile
         }
@@ -601,7 +601,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - throws: `Folder.Error.creatingFolderFailed`
      */
-    public func createSubfolderIfNeeded(withName folderName: String) throws -> Folder {
+    @discardableResult public func createSubfolderIfNeeded(withName folderName: String) throws -> Folder {
         if let existingFolder = try? subfolder(named: folderName) {
             return existingFolder
         }
