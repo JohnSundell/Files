@@ -164,20 +164,9 @@ public class FileSystem {
         
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
-            guard path != "/" else {
-                return nil
+            return fileManager.parentPath(for: path).flatMap { parentPath in
+                return try? Folder(path: parentPath, using: fileManager)
             }
-            
-            var pathComponents = path.pathComponents
-            
-            switch kind {
-            case .file:
-                pathComponents.removeLast()
-            case .folder:
-                pathComponents.removeLast(2)
-            }
-            
-            return try? Folder(path: pathComponents.joined(separator: "/"), using: fileManager)
         }
         
         /// A string describing the item
@@ -313,17 +302,44 @@ public class FileSystem {
     }
 
     /**
+     *  Create a new file at a given path
+     *
+     *  - parameter path: The path at which a file should be created. If the path is missing intermediate
+     *                    parent folders, those will be created as well.
+     *
+     *  - throws: `File.Error.writeFailed`
+     *
+     *  - returns: The file that was created
+     */
+    @discardableResult public func createFile(at path: String, contents: Data = Data()) throws -> File {
+        let path = fileManager.absolutePath(for: path)
+
+        guard let parentPath = fileManager.parentPath(for: path) else {
+            throw File.Error.writeFailed
+        }
+
+        do {
+            let name = path.substring(from: path.index(path.startIndex, offsetBy: parentPath.characters.count))
+            return try createFolder(at: parentPath).createFile(named: name, contents: contents)
+        } catch {
+            throw File.Error.writeFailed
+        }
+    }
+
+    /**
      *  Create a new folder at a given path
      *
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
      *  - throws: `Folder.Error.creatingFolderFailed`
+     *
+     *  - returns: The folder that was created
      */
     @discardableResult public func createFolder(at path: String) throws -> Folder {
         do {
-            let absolutePath = fileManager.absolutePath(for: path)
-            try fileManager.createDirectory(atPath: absolutePath, withIntermediateDirectories: true, attributes: nil)
+            let path = fileManager.absolutePath(for: path)
+            try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
             throw Folder.Error.creatingFolderFailed
@@ -826,6 +842,22 @@ private extension FileManager {
         }
         
         return currentDirectoryPath + "/" + path
+    }
+
+    func parentPath(for path: String) -> String? {
+        guard path != "/" else {
+            return nil
+        }
+
+        var pathComponents = path.pathComponents
+
+        if path.hasSuffix("/") {
+            pathComponents.removeLast(2)
+        } else {
+            pathComponents.removeLast()
+        }
+
+        return pathComponents.joined(separator: "/")
     }
 }
 
