@@ -397,7 +397,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      */
     public func read() throws -> Data {
         do {
-            return try Data(contentsOf: path.fileURL)
+            return try Data(contentsOf: URL(fileURLWithPath: path))
         } catch {
             throw Error.readFailed
         }
@@ -438,7 +438,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      */
     public func write(data: Data) throws {
         do {
-            try data.write(to: path.fileURL)
+            try data.write(to: URL(fileURLWithPath: path))
         } catch {
             throw Error.writeFailed
         }
@@ -862,10 +862,6 @@ private extension FileManager {
 }
 
 private extension String {
-    var fileURL: URL {
-        return URL(string: "file://" + self)!
-    }
-    
     var pathComponents: [String] {
         return components(separatedBy: "/")
     }
