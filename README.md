@@ -71,7 +71,8 @@ Files can be easily used in either a Swift script, command line tool or in an ap
 ### In a script
 
 - Install [Marathon](https://github.com/johnsundell/marathon).
-- Add Files using `$ marathon add git@github.com:JohnSundell/Files.git`
+- Add Files using `$ marathon add git@github.com:JohnSundell/Files.git`.
+- Run your script using `$ marathon run <path-to-your-script>`.
 
 ### In a command line tool
 
