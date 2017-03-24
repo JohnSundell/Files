@@ -182,7 +182,7 @@ public class FileSystem {
                 throw PathError.empty
             }
             
-            let path = fileManager.absolutePath(for: path)
+            let path = try fileManager.absolutePath(for: path)
             
             guard fileManager.itemKind(atPath: path) == kind else {
                 throw PathError.invalid(path)
@@ -312,7 +312,7 @@ public class FileSystem {
      *  - returns: The file that was created
      */
     @discardableResult public func createFile(at path: String, contents: Data = Data()) throws -> File {
-        let path = fileManager.absolutePath(for: path)
+        let path = try fileManager.absolutePath(for: path)
 
         guard let parentPath = fileManager.parentPath(for: path) else {
             throw File.Error.writeFailed
@@ -338,7 +338,7 @@ public class FileSystem {
      */
     @discardableResult public func createFolder(at path: String) throws -> Folder {
         do {
-            let path = fileManager.absolutePath(for: path)
+            let path = try fileManager.absolutePath(for: path)
             try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
@@ -827,21 +827,23 @@ private extension FileManager {
         }
     }
     
-    func absolutePath(for path: String) -> String {
+    func absolutePath(for path: String) throws -> String {
         if path.hasPrefix("/") {
-            return path
+            return try pathByFillingInParentReferences(for: path)
         }
         
         if path.hasPrefix("~") {
             let prefixEndIndex = path.index(after: path.startIndex)
             
-            return path.replacingCharacters(
+            let path = path.replacingCharacters(
                 in: path.startIndex..<prefixEndIndex,
                 with: ProcessInfo.processInfo.homeFolderPath
             )
+
+            return try pathByFillingInParentReferences(for: path)
         }
-        
-        return currentDirectoryPath + "/" + path
+
+        return try pathByFillingInParentReferences(for: path, prependCurrentFolderPath: true)
     }
 
     func parentPath(for path: String) -> String? {
@@ -858,6 +860,34 @@ private extension FileManager {
         }
 
         return pathComponents.joined(separator: "/")
+    }
+
+    func pathByFillingInParentReferences(for path: String, prependCurrentFolderPath: Bool = false) throws -> String {
+        var path = path
+        var filledIn = false
+
+        while let parentReferenceRange = path.range(of: "../") {
+            let currentFolderPath = path.substring(to: parentReferenceRange.lowerBound)
+
+            guard let currentFolder = try? Folder(path: currentFolderPath) else {
+                throw FileSystem.Item.PathError.invalid(path)
+            }
+
+            guard let parent = currentFolder.parent else {
+                throw FileSystem.Item.PathError.invalid(path)
+            }
+
+            path = path.replacingCharacters(in: path.startIndex..<parentReferenceRange.upperBound, with: parent.path)
+            filledIn = true
+        }
+
+        if prependCurrentFolderPath {
+            guard filledIn else {
+                return currentDirectoryPath + "/" + path
+            }
+        }
+
+        return path
     }
 }
 

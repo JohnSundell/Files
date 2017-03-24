@@ -145,6 +145,30 @@ class FilesTests: XCTestCase {
             try file.delete()
         }
     }
+
+    func testReadingFileFromCurrentFoldersParent() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "folder")
+            let file = try folder.createFile(named: "file")
+
+            // Move to the subfolder
+            XCTAssertNotEqual(FileManager.default.currentDirectoryPath, subfolder.path)
+            XCTAssertTrue(FileManager.default.changeCurrentDirectoryPath(subfolder.path))
+
+            try XCTAssertEqual(File(path: "../file"), file)
+        }
+    }
+
+    func testReadingFileWithMultipleParentReferencesWithinPath() {
+        performTest {
+            let subfolderA = try folder.createSubfolder(named: "A")
+            try folder.createSubfolder(named: "B")
+            let subfolderC = try folder.createSubfolder(named: "C")
+            let file = try subfolderC.createFile(named: "file")
+
+            try XCTAssertEqual(File(path: subfolderA.path + "../B/../C/file"), file)
+        }
+    }
     
     func testRenamingFolder() {
         performTest {
