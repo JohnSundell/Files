@@ -70,8 +70,8 @@ Files can be easily used in either a Swift script, command line tool or in an ap
 
 ### In a script
 
-- Write a Swift script in your favorite editor.
-- Concat your script with `Files.swift` and run it using `swift` (for example: `$ cat Files.swift MyScript.swift | swift -`).
+- Install [Marathon](https://github.com/johnsundell/marathon).
+- Add Files using `$ marathon add git@github.com:JohnSundell/Files.git`
 
 ### In a command line tool
 
