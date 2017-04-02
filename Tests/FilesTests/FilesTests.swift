@@ -437,9 +437,14 @@ class FilesTests: XCTestCase {
 
     func testCreatingFileFromFileSystem() {
         performTest {
-            let filePath = folder.path + "one/two/three"
+            let fileName = "three"
+            let filePath = folder.path + "one/two/\(fileName)"
             let contents = Data()
-            try FileSystem().createFile(at: filePath, contents: contents)
+            let file = try FileSystem().createFile(at: filePath, contents: contents)
+
+            XCTAssertEqual(file.name, fileName)
+            XCTAssertEqual(file.path, filePath)
+
             try XCTAssertEqual(File(path: filePath).read(), contents)
         }
     }
