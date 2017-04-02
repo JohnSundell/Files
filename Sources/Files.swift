@@ -319,7 +319,7 @@ public class FileSystem {
         }
 
         do {
-            let name = path.substring(from: path.index(path.startIndex, offsetBy: parentPath.characters.count))
+            let name = path.substring(from: path.index(path.startIndex, offsetBy: parentPath.characters.count + 1))
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
             throw File.Error.writeFailed
