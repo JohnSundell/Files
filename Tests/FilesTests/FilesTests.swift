@@ -33,6 +33,9 @@ class FilesTests: XCTestCase {
     
     func testCreatingAndDeletingFile() {
         performTest {
+            // Verify that the file doesn't exist
+            XCTAssertFalse(folder.containsFile(named: "test.txt"))
+
             // Create a file and verify its properties
             let file = try folder.createFile(named: "test.txt")
             XCTAssertEqual(file.name, "test.txt")
@@ -41,8 +44,9 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.nameExcludingExtension, "test")
             try XCTAssertEqual(file.read(), Data())
             
-            // You should now be able to access the file using its path
+            // You should now be able to access the file using its path and through the parent
             _ = try File(path: file.path)
+            XCTAssertTrue(folder.containsFile(named: "test.txt"))
 
             try file.delete()
             
@@ -56,13 +60,17 @@ class FilesTests: XCTestCase {
     
     func testCreatingAndDeletingFolder() {
         performTest {
+            // Verify that the folder doesn't exist
+            XCTAssertFalse(folder.containsSubfolder(named: "folder"))
+
             // Create a folder and verify its properties
             let subfolder = try folder.createSubfolder(named: "folder")
             XCTAssertEqual(subfolder.name, "folder")
             XCTAssertEqual(subfolder.path, folder.path + "folder/")
             
-            // You should now be able to access the folder using its path
+            // You should now be able to access the folder using its path and through the parent
             _ = try Folder(path: subfolder.path)
+            XCTAssertTrue(folder.containsSubfolder(named: "folder"))
             
             // Put a file in the folder
             let file = try subfolder.createFile(named: "file")
