@@ -363,6 +363,62 @@ public class FileSystem {
     }
 }
 
+extension String {
+    
+    /**
+     *  Attempts to create an Int value.
+     *
+     *  - Returns: An Int representation.
+     */
+    func toInt() -> Int? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.intValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Double value.
+     *
+     *  - Returns: A Double representation.
+     */
+    func toDouble() -> Double? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.doubleValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Float value.
+     *
+     *  - Returns: A Float representation.
+     */
+    func toFloat() -> Float? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.floatValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Bool value.
+     *
+     *  - Returns: A Bool representation.
+     */
+    func toBool() -> Bool? {
+        let trimmed = self.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
+        if trimmed == "true" || trimmed == "1" || trimmed == "false" || trimmed == "0" {
+            return (trimmed as NSString).boolValue
+        }
+        return nil
+    }
+    
+}
+
 /**
  *  Class representing a file that's stored by a file system
  *
