@@ -545,7 +545,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      */
     @available(*, deprecated: 1.7.0, renamed: "read")
     public func readAsInt() throws -> Int {
-        guard let int = try readAsString().toInt() else {
+        guard let int = try Int(readAsString()) else {
             throw Error.readFailed
         }
 
