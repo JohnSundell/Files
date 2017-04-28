@@ -433,6 +433,7 @@ class FilesTests: XCTestCase {
             let folder = try Folder(path: "")
             XCTAssertEqual(FileManager.default.currentDirectoryPath + "/", folder.path)
             XCTAssertEqual(FileSystem().currentFolder, folder)
+            XCTAssertEqual(Folder.current, folder)
         }
     }
     

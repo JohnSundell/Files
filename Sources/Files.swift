@@ -485,6 +485,11 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public var subfolders: FileSystemSequence<Folder> {
         return makeSubfolderSequence()
     }
+
+    /// A reference to the folder that is the current working directory.
+    public static var current: Folder {
+        return try! Folder(path: "")
+    }
     
     /**
      *  Initialize an instance of this class with a path pointing to a folder
