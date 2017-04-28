@@ -486,9 +486,19 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         return makeSubfolderSequence()
     }
 
-    /// A reference to the folder that is the current working directory.
+    /// A reference to the folder that is the current working directory
     public static var current: Folder {
-        return try! Folder(path: "")
+        return FileSystem(using: .default).currentFolder
+    }
+
+    /// A reference to the current user's home folder
+    public static var home: Folder {
+        return FileSystem(using: .default).homeFolder
+    }
+
+    /// A reference to the temporary folder used by this file system
+    public static var temporary: Folder {
+        return FileSystem(using: .default).temporaryFolder
     }
     
     /**

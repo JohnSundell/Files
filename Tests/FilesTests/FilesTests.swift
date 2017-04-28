@@ -426,6 +426,7 @@ class FilesTests: XCTestCase {
     
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)
+        XCTAssertNotNil(Folder.home)
     }
 
     func testAccessingCurrentWorkingDirectory() {
