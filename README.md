@@ -43,7 +43,7 @@ try Folder(path: "MyFolder").files.enumerated().forEach { (index, file) in
 
 Recursively iterate over all folders in a tree:
 ```swift
-FileSystem().homeFolder.makeSubfolderSequence(recursive: true).forEach { folder in
+Folder.home.makeSubfolderSequence(recursive: true).forEach { folder in
     print("Name : \(folder.name), parent: \(folder.parent)")
 }
 ```
@@ -62,6 +62,13 @@ Move all files in a folder to another:
 let originFolder = try Folder(path: "/users/john/folderA")
 let targetFolder = try Folder(path: "/users/john/folderB")
 try originFolder.files.move(to: targetFolder)
+```
+
+Easy access to system folders:
+```swift
+Folder.current
+Folder.temporary
+Folder.home
 ```
 
 ## Usage
