@@ -459,6 +459,19 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testCreateFileFromFileSystemIfNeeded() {
+        performTest {
+            let path = folder.path + "one/two/three/file"
+            let contentA = "Hello".data(using: .utf8)!
+            let contentB = "World".data(using: .utf8)!
+            let fileA = try FileSystem().createFileIfNeeded(at: path, contents: contentA)
+            let fileB = try FileSystem().createFileIfNeeded(at: path, contents: contentB)
+
+            try XCTAssertEqual(fileA.readAsString(), "Hello")
+            try XCTAssertEqual(fileA.read(), fileB.read())
+        }
+    }
+
     func testCreatingFolderFromFileSystem() {
         performTest {
             let folderPath = folder.path + "one/two/three"
