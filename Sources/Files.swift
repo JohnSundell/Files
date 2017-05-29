@@ -327,6 +327,24 @@ public class FileSystem {
     }
 
     /**
+     *  Either return an existing file, or create a new one, at a given path.
+     *
+     *  - parameter path: The path for which a file should either be returned or created at. If the folder
+     *                    is missing, any intermediate parent folders will also be created.
+     *
+     *  - throws: `File.Error.writeFailed`
+     *
+     *  - returns: The file that was either created or found.
+     */
+    @discardableResult public func createFileIfNeeded(at path: String, contents: Data = Data()) throws -> File {
+        if let existingFile = try? File(path: path, using: fileManager) {
+            return existingFile
+        }
+
+        return try createFile(at: path, contents: contents)
+    }
+
+    /**
      *  Create a new folder at a given path
      *
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
