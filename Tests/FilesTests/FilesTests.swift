@@ -27,7 +27,19 @@ import XCTest
 import Files
 
 class FilesTests: XCTestCase {
-    let folder = FileSystem().temporaryFolder
+    private var folder: Folder!
+
+    // MARK: - XCTestCase
+
+    override func setUp() {
+        super.setUp()
+        folder = try! Folder.home.createSubfolder(named: ".filesTest")
+    }
+
+    override func tearDown() {
+        try? folder.delete()
+        super.tearDown()
+    }
     
     // MARK: - Tests
     
@@ -144,10 +156,10 @@ class FilesTests: XCTestCase {
     
     func testReadingFileWithTildePath() {
         performTest {
-            try FileSystem().homeFolder.createFile(named: ".filestest")
-            let file = try File(path: "~/.filestest")
+            try folder.createFile(named: "File")
+            let file = try File(path: "~/.filesTest/File")
             try XCTAssertEqual(file.read(), Data())
-            XCTAssertEqual(file.path, FileSystem().homeFolder.path + ".filestest")
+            XCTAssertEqual(file.path, folder.path + "File")
 
             // Cleanup since we're performing a test in the actual home folder
             try file.delete()
@@ -538,7 +550,7 @@ class FilesTests: XCTestCase {
         performTest {
             let fileManager = FileManagerMock()
             let fileSystem = FileSystem(using: fileManager)
-            let subfolder = try fileSystem.temporaryFolder.createSubfolder(named: "folder")
+            let subfolder = try fileSystem.temporaryFolder.createSubfolder(named: UUID().uuidString)
             let file = try subfolder.createFile(named: "file")
             try XCTAssertEqual(file.read(), Data())
         
