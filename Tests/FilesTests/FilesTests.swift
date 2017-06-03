@@ -268,7 +268,7 @@ class FilesTests: XCTestCase {
             // Hidden files should be excluded by default
             try folder.createFile(named: ".hidden")
             
-            XCTAssertEqual(folder.files.names, ["1", "2", "3"])
+            XCTAssertEqual(folder.files.names.sorted(), ["1", "2", "3"])
             XCTAssertEqual(folder.files.count, 3)
         }
     }
@@ -280,7 +280,7 @@ class FilesTests: XCTestCase {
             try subfolder.createFile(named: "visible")
             
             let files = subfolder.makeFileSequence(includeHidden: true)
-            XCTAssertEqual(files.names, [".hidden", "visible"])
+            XCTAssertEqual(files.names.sorted(), [".hidden", "visible"])
             XCTAssertEqual(files.count, 2)
         }
     }
@@ -316,7 +316,7 @@ class FilesTests: XCTestCase {
             try folder.createSubfolder(named: "2")
             try folder.createSubfolder(named: "3")
             
-            XCTAssertEqual(folder.subfolders.names, ["1", "2", "3"])
+            XCTAssertEqual(folder.subfolders.names.sorted(), ["1", "2", "3"])
             XCTAssertEqual(folder.subfolders.count, 3)
         }
     }
@@ -332,9 +332,9 @@ class FilesTests: XCTestCase {
             try subfolder2.createSubfolder(named: "2A")
             try subfolder2.createSubfolder(named: "2B")
             
-            let expectedNames = ["1", "2", "1A", "1B", "2A", "2B"]
+            let expectedNames = ["1", "1A", "1B", "2", "2A", "2B"]
             let sequence = folder.makeSubfolderSequence(recursive: true)
-            XCTAssertEqual(sequence.names, expectedNames)
+            XCTAssertEqual(sequence.names.sorted(), expectedNames)
             XCTAssertEqual(sequence.count, 6)
         }
     }
