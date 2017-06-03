@@ -349,6 +349,16 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(folder.files.last?.name, "C")
         }
     }
+
+    func testModificationDate() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "Folder")
+            XCTAssertTrue(Calendar.current.isDateInToday(subfolder.modificationDate))
+
+            let file = try folder.createFile(named: "File")
+            XCTAssertTrue(Calendar.current.isDateInToday(file.modificationDate))
+        }
+    }
     
     func testParent() {
         performTest {

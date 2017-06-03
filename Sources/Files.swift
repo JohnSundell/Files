@@ -161,7 +161,10 @@ public class FileSystem {
             
             return components.last
         }
-        
+
+        /// The date when the item was last modified
+        public private(set) lazy var modificationDate: Date = self.loadModificationDate()
+
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
             return fileManager.parentPath(for: path).flatMap { parentPath in
@@ -852,6 +855,11 @@ private extension FileSystem.Item {
                 return "Folder"
             }
         }
+    }
+
+    func loadModificationDate() -> Date {
+        let attributes = try! fileManager.attributesOfItem(atPath: path)
+        return attributes[FileAttributeKey.modificationDate] as! Date
     }
 }
 
