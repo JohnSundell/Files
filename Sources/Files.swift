@@ -381,6 +381,62 @@ public class FileSystem {
     }
 }
 
+extension String {
+    
+    /**
+     *  Attempts to create an Int value.
+     *
+     *  - Returns: An Int representation.
+     */
+    func toInt() -> Int? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.intValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Double value.
+     *
+     *  - Returns: A Double representation.
+     */
+    func toDouble() -> Double? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.doubleValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Float value.
+     *
+     *  - Returns: A Float representation.
+     */
+    func toFloat() -> Float? {
+        if let num = NumberFormatter().number(from: self) {
+            return num.floatValue
+        } else {
+            return nil
+        }
+    }
+    
+    /**
+     *  Attempts to create a Bool value.
+     *
+     *  - Returns: A Bool representation.
+     */
+    func toBool() -> Bool? {
+        let trimmed = self.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).lowercased()
+        if trimmed == "true" || trimmed == "1" || trimmed == "false" || trimmed == "0" {
+            return (trimmed as NSString).boolValue
+        }
+        return nil
+    }
+    
+}
+
 /**
  *  Class representing a file that's stored by a file system
  *
@@ -420,12 +476,78 @@ public final class File: FileSystem.Item, FileSystemIterable {
             throw Error.readFailed
         }
     }
+    
+    /**
+     *  Read the data contained within this file, and convert it to a String
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a String
+     */
+    public func read(encoding: String.Encoding = .utf8) throws -> String {
+        guard let string = try String(data: read(), encoding: encoding) else {
+            throw Error.readFailed
+        }
+        
+        return string
+    }
+    
+    /**
+     *  Read the data contained within this file, and convert it to an Int
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as an Int
+     */
+    public func read() throws -> Int {
+        guard let int = try read().toInt() else {
+            throw Error.readFailed
+        }
+        
+        return int
+    }
+    
+    /**
+     *  Read the data contained within this file, and convert it to a Double
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a Double
+     */
+    public func read() throws -> Double {
+        guard let double = try read().toDouble() else {
+            throw Error.readFailed
+        }
+        
+        return double
+    }
+    
+    /**
+     *  Read the data contained within this file, and convert it to a Float
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a Float
+     */
+    public func read() throws -> Float {
+        guard let float = try read().toFloat() else {
+            throw Error.readFailed
+        }
+        
+        return float
+    }
+    
+    /**
+     *  Read the data contained within this file, and convert it to a Bool
+     *
+     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a Bool
+     */
+    public func read() throws -> Bool {
+        guard let bool = try read().toBool() else {
+            throw Error.readFailed
+        }
+        
+        return bool
+    }
 
     /**
      *  Read the data contained within this file, and convert it to a string
      *
      *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a string
      */
+    @available(*, deprecated: 1.7.0, renamed: "read")
     public func readAsString(encoding: String.Encoding = .utf8) throws -> String {
         guard let string = try String(data: read(), encoding: encoding) else {
             throw Error.readFailed
@@ -439,6 +561,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *
      *  - throws: `File.Error.readFailed` if the file's data couldn't be read as an int
      */
+    @available(*, deprecated: 1.7.0, renamed: "read")
     public func readAsInt() throws -> Int {
         guard let int = try Int(readAsString()) else {
             throw Error.readFailed
