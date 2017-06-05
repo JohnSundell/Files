@@ -33,7 +33,8 @@ class FilesTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        folder = try! Folder.home.createSubfolder(named: ".filesTest")
+        folder = try! Folder.home.createSubfolderIfNeeded(withName: ".filesTest")
+        try! folder.empty()
     }
 
     override func tearDown() {
@@ -505,8 +506,8 @@ class FilesTests: XCTestCase {
     func testCreatingFolderWithTildePathFromFileSystem() {
         performTest {
             let fileSystem = FileSystem()
-            try fileSystem.createFolder(at: "~/.filestest")
-            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filestest")
+            try fileSystem.createFolder(at: "~/.filesTestFolder")
+            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filesTestFolder")
 
             // Cleanup since we're performing a test in the actual home folder
             try createdFolder.delete()
