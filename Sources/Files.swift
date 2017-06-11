@@ -146,9 +146,9 @@ public class FileSystem {
             guard let `extension` = `extension` else {
                 return name
             }
-            
-            let startIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
-            return name.replacingCharacters(in: startIndex..<name.endIndex, with: "")
+
+            let endIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
+            return name.substring(to: endIndex)
         }
         
         /// Any extension that the item has
