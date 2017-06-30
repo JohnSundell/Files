@@ -146,9 +146,9 @@ public class FileSystem {
             guard let `extension` = `extension` else {
                 return name
             }
-            
-            let startIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
-            return name.replacingCharacters(in: startIndex..<name.endIndex, with: "")
+
+            let endIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
+            return name.substring(to: endIndex)
         }
         
         /// Any extension that the item has
@@ -161,7 +161,10 @@ public class FileSystem {
             
             return components.last
         }
-        
+
+        /// The date when the item was last modified
+        public private(set) lazy var modificationDate: Date = self.loadModificationDate()
+
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
             return fileManager.parentPath(for: path).flatMap { parentPath in
@@ -327,6 +330,24 @@ public class FileSystem {
     }
 
     /**
+     *  Either return an existing file, or create a new one, at a given path.
+     *
+     *  - parameter path: The path for which a file should either be returned or created at. If the folder
+     *                    is missing, any intermediate parent folders will also be created.
+     *
+     *  - throws: `File.Error.writeFailed`
+     *
+     *  - returns: The file that was either created or found.
+     */
+    @discardableResult public func createFileIfNeeded(at path: String, contents: Data = Data()) throws -> File {
+        if let existingFile = try? File(path: path, using: fileManager) {
+            return existingFile
+        }
+
+        return try createFile(at: path, contents: contents)
+    }
+
+    /**
      *  Create a new folder at a given path
      *
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
@@ -484,6 +505,21 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     /// The sequence of folders that are subfolers of this folder (non-recursive)
     public var subfolders: FileSystemSequence<Folder> {
         return makeSubfolderSequence()
+    }
+
+    /// A reference to the folder that is the current working directory
+    public static var current: Folder {
+        return FileSystem(using: .default).currentFolder
+    }
+
+    /// A reference to the current user's home folder
+    public static var home: Folder {
+        return FileSystem(using: .default).homeFolder
+    }
+
+    /// A reference to the temporary folder used by this file system
+    public static var temporary: Folder {
+        return FileSystem(using: .default).temporaryFolder
     }
     
     /**
@@ -819,6 +855,11 @@ private extension FileSystem.Item {
                 return "Folder"
             }
         }
+    }
+
+    func loadModificationDate() -> Date {
+        let attributes = try! fileManager.attributesOfItem(atPath: path)
+        return attributes[FileAttributeKey.modificationDate] as! Date
     }
 }
 

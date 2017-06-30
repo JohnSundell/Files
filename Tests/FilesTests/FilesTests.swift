@@ -27,7 +27,20 @@ import XCTest
 import Files
 
 class FilesTests: XCTestCase {
-    let folder = FileSystem().temporaryFolder
+    private var folder: Folder!
+
+    // MARK: - XCTestCase
+
+    override func setUp() {
+        super.setUp()
+        folder = try! Folder.home.createSubfolderIfNeeded(withName: ".filesTest")
+        try! folder.empty()
+    }
+
+    override func tearDown() {
+        try? folder.delete()
+        super.tearDown()
+    }
     
     // MARK: - Tests
     
@@ -144,10 +157,10 @@ class FilesTests: XCTestCase {
     
     func testReadingFileWithTildePath() {
         performTest {
-            try FileSystem().homeFolder.createFile(named: ".filestest")
-            let file = try File(path: "~/.filestest")
+            try folder.createFile(named: "File")
+            let file = try File(path: "~/.filesTest/File")
             try XCTAssertEqual(file.read(), Data())
-            XCTAssertEqual(file.path, FileSystem().homeFolder.path + ".filestest")
+            XCTAssertEqual(file.path, folder.path + "File")
 
             // Cleanup since we're performing a test in the actual home folder
             try file.delete()
@@ -256,7 +269,7 @@ class FilesTests: XCTestCase {
             // Hidden files should be excluded by default
             try folder.createFile(named: ".hidden")
             
-            XCTAssertEqual(folder.files.names, ["1", "2", "3"])
+            XCTAssertEqual(folder.files.names.sorted(), ["1", "2", "3"])
             XCTAssertEqual(folder.files.count, 3)
         }
     }
@@ -268,7 +281,7 @@ class FilesTests: XCTestCase {
             try subfolder.createFile(named: "visible")
             
             let files = subfolder.makeFileSequence(includeHidden: true)
-            XCTAssertEqual(files.names, [".hidden", "visible"])
+            XCTAssertEqual(files.names.sorted(), [".hidden", "visible"])
             XCTAssertEqual(files.count, 2)
         }
     }
@@ -304,7 +317,7 @@ class FilesTests: XCTestCase {
             try folder.createSubfolder(named: "2")
             try folder.createSubfolder(named: "3")
             
-            XCTAssertEqual(folder.subfolders.names, ["1", "2", "3"])
+            XCTAssertEqual(folder.subfolders.names.sorted(), ["1", "2", "3"])
             XCTAssertEqual(folder.subfolders.count, 3)
         }
     }
@@ -320,9 +333,9 @@ class FilesTests: XCTestCase {
             try subfolder2.createSubfolder(named: "2A")
             try subfolder2.createSubfolder(named: "2B")
             
-            let expectedNames = ["1", "2", "1A", "1B", "2A", "2B"]
+            let expectedNames = ["1", "1A", "1B", "2", "2A", "2B"]
             let sequence = folder.makeSubfolderSequence(recursive: true)
-            XCTAssertEqual(sequence.names, expectedNames)
+            XCTAssertEqual(sequence.names.sorted(), expectedNames)
             XCTAssertEqual(sequence.count, 6)
         }
     }
@@ -335,6 +348,16 @@ class FilesTests: XCTestCase {
             
             XCTAssertEqual(folder.files.first?.name, "A")
             XCTAssertEqual(folder.files.last?.name, "C")
+        }
+    }
+
+    func testModificationDate() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "Folder")
+            XCTAssertTrue(Calendar.current.isDateInToday(subfolder.modificationDate))
+
+            let file = try folder.createFile(named: "File")
+            XCTAssertTrue(Calendar.current.isDateInToday(file.modificationDate))
         }
     }
     
@@ -426,6 +449,7 @@ class FilesTests: XCTestCase {
     
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)
+        XCTAssertNotNil(Folder.home)
     }
 
     func testAccessingCurrentWorkingDirectory() {
@@ -433,6 +457,7 @@ class FilesTests: XCTestCase {
             let folder = try Folder(path: "")
             XCTAssertEqual(FileManager.default.currentDirectoryPath + "/", folder.path)
             XCTAssertEqual(FileSystem().currentFolder, folder)
+            XCTAssertEqual(Folder.current, folder)
         }
     }
     
@@ -457,6 +482,19 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testCreateFileFromFileSystemIfNeeded() {
+        performTest {
+            let path = folder.path + "one/two/three/file"
+            let contentA = "Hello".data(using: .utf8)!
+            let contentB = "World".data(using: .utf8)!
+            let fileA = try FileSystem().createFileIfNeeded(at: path, contents: contentA)
+            let fileB = try FileSystem().createFileIfNeeded(at: path, contents: contentB)
+
+            try XCTAssertEqual(fileA.readAsString(), "Hello")
+            try XCTAssertEqual(fileA.read(), fileB.read())
+        }
+    }
+
     func testCreatingFolderFromFileSystem() {
         performTest {
             let folderPath = folder.path + "one/two/three"
@@ -468,8 +506,8 @@ class FilesTests: XCTestCase {
     func testCreatingFolderWithTildePathFromFileSystem() {
         performTest {
             let fileSystem = FileSystem()
-            try fileSystem.createFolder(at: "~/.filestest")
-            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filestest")
+            try fileSystem.createFolder(at: "~/.filesTestFolder")
+            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filesTestFolder")
 
             // Cleanup since we're performing a test in the actual home folder
             try createdFolder.delete()
@@ -523,7 +561,7 @@ class FilesTests: XCTestCase {
         performTest {
             let fileManager = FileManagerMock()
             let fileSystem = FileSystem(using: fileManager)
-            let subfolder = try fileSystem.temporaryFolder.createSubfolder(named: "folder")
+            let subfolder = try fileSystem.temporaryFolder.createSubfolder(named: UUID().uuidString)
             let file = try subfolder.createFile(named: "file")
             try XCTAssertEqual(file.read(), Data())
         
