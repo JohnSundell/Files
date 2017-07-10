@@ -702,7 +702,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter recursive: Whether the files contained in all subfolders of this folder should also be included
      *  - parameter includeHidden: Whether hidden (dot) files should be included in the sequence (default: false)
      *
-     *  If `recursive = true` the folder tree will be traversed breath-first
+     *  If `recursive = true` the folder tree will be traversed depth-first
      */
     public func makeFileSequence(recursive: Bool = false, includeHidden: Bool = false) -> FileSystemSequence<File> {
         return FileSystemSequence(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
@@ -714,7 +714,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter recursive: Whether the entire folder tree contained under this folder should also be included
      *  - parameter includeHidden: Whether hidden (dot) files should be included in the sequence (default: false)
      *
-     *  If `recursive = true` the folder tree will be traversed breath-first
+     *  If `recursive = true` the folder tree will be traversed depth-first
      */
     public func makeSubfolderSequence(recursive: Bool = false, includeHidden: Bool = false) -> FileSystemSequence<Folder> {
         return FileSystemSequence(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
@@ -897,7 +897,7 @@ private extension FileManager {
     
     func itemNames(inFolderAtPath path: String) -> [String] {
         do {
-            return try contentsOfDirectory(atPath: path)
+            return try contentsOfDirectory(atPath: path).sorted()
         } catch {
             return []
         }
