@@ -628,6 +628,23 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     }
 
     /**
+     *  Create a file in this folder and return it
+     *
+     *  - parameter fileName: The name of the file to create
+     *  - parameter contents: The string content that the file should contain
+     *  - parameter encoding: The encoding that the given string content should be encoded with
+     *
+     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     *
+     *  - returns: The file that was created
+     */
+    @discardableResult public func createFile(named fileName: String, contents: String, encoding: String.Encoding = .utf8) throws -> File {
+        let file = try createFile(named: fileName)
+        try file.write(string: contents, encoding: encoding)
+        return file
+    }
+
+    /**
      *  Either return an existing file, or create a new one, for a given name
      *
      *  - parameter fileName: The name of the file to either get or create

@@ -545,6 +545,13 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCreatingFileWithString() {
+        performTest {
+            let file = try folder.createFile(named: "file", contents: "Hello world")
+            XCTAssertEqual(try file.readAsString(), "Hello world")
+        }
+    }
+    
     func testUsingCustomFileManager() {
         class FileManagerMock: FileManager {
             var noFilesExist = false
