@@ -447,6 +447,25 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testMovingFolderHiddenContents() {
+        performTest {
+            let parentFolder = try folder.createSubfolder(named: "parent")
+            try parentFolder.createFile(named: ".hidden")
+            try parentFolder.createSubfolder(named: ".folder")
+            
+            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
+            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+            
+            let newParentFolder = try folder.createSubfolder(named: "parentB")
+            try parentFolder.moveContents(to: newParentFolder, includeHidden: true)
+            
+            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [])
+            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [])
+            XCTAssertEqual(newParentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
+            XCTAssertEqual(newParentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+        }
+    }
+
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)
         XCTAssertNotNil(Folder.home)
