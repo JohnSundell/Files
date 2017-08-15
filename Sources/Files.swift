@@ -725,9 +725,9 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter newParent: The new parent folder that the contents of this folder should be moved to
      */
-    public func moveContents(to newParent: Folder) throws {
-        try files.forEach { try $0.move(to: newParent) }
-        try subfolders.forEach { try $0.move(to: newParent) }
+    public func moveContents(to newParent: Folder, includeHidden: Bool = false) throws {
+        try makeFileSequence(includeHidden: includeHidden).forEach { try $0.move(to: newParent) }
+        try makeSubfolderSequence(includeHidden: includeHidden).forEach { try $0.move(to: newParent) }
     }
     
     /**
