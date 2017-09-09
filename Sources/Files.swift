@@ -89,6 +89,8 @@ public class FileSystem {
             case renameFailed(Item)
             /// Thrown when a file or folder couldn't be moved (contains the item)
             case moveFailed(Item)
+            /// Thrown when a file or folder couldn't be copied (contains the item)
+            case copyFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
             
@@ -101,6 +103,8 @@ public class FileSystem {
                         return itemA == itemB
                     case .moveFailed(_):
                         return false
+                    case .copyFailed(_):
+                        return false
                     case .deleteFailed(_):
                         return false
                     }
@@ -110,6 +114,19 @@ public class FileSystem {
                         return false
                     case .moveFailed(let itemB):
                         return itemA == itemB
+                    case .copyFailed(_):
+                        return false
+                    case .deleteFailed(_):
+                        return false
+                    }
+                case .copyFailed(let itemA):
+                    switch rhs {
+                    case .renameFailed(_):
+                        return false
+                    case .moveFailed(_):
+                        return false
+                    case .copyFailed(let itemB):
+                        return itemA == itemB
                     case .deleteFailed(_):
                         return false
                     }
@@ -118,6 +135,8 @@ public class FileSystem {
                     case .renameFailed(_):
                         return false
                     case .moveFailed(_):
+                        return false
+                    case .copyFailed(_):
                         return false
                     case .deleteFailed(let itemB):
                         return itemA == itemB
@@ -261,6 +280,24 @@ public class FileSystem {
                 path = newPath
             } catch {
                 throw OperationError.moveFailed(self)
+            }
+        }
+        
+        /**
+         *  Copy this item to a new folder
+         *
+         *  - parameter folder: The folder that the item should be copy to
+         *
+         *  - throws: `FileSystem.Item.OperationError.copyFailed` if the item couldn't be copied
+         */
+        public func copy(to folder: Folder) throws {
+            let newPath = folder.path + name
+            
+            do {
+                try fileManager.copyItem(atPath: path, toPath: newPath)
+                path = newPath
+            } catch {
+                throw OperationError.copyFailed(self)
             }
         }
         
