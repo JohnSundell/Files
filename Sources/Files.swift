@@ -284,24 +284,6 @@ public class FileSystem {
         }
         
         /**
-         *  Copy this item to a new folder
-         *
-         *  - parameter folder: The folder that the item should be copy to
-         *
-         *  - throws: `FileSystem.Item.OperationError.copyFailed` if the item couldn't be copied
-         */
-        public func copy(to folder: Folder) throws {
-            let newPath = folder.path + name
-            
-            do {
-                try fileManager.copyItem(atPath: path, toPath: newPath)
-                path = newPath
-            } catch {
-                throw OperationError.copyFailed(self)
-            }
-        }
-        
-        /**
          *  Delete the item from disk
          *
          *  The item will be immediately deleted. If this is a folder, all of its contents will also be deleted.
@@ -516,6 +498,24 @@ public final class File: FileSystem.Item, FileSystemIterable {
         }
         
         try write(data: data)
+    }
+    
+    /**
+     *  Copy this file to a new folder
+     *
+     *  - parameter folder: The folder that the file should be copy to
+     *
+     *  - throws: `FileSystem.Item.OperationError.copyFailed` if the file couldn't be copied
+     */
+    @discardableResult public func copy(to folder: Folder) throws -> File {
+        let newPath = folder.path + name
+        
+        do {
+            try fileManager.copyItem(atPath: path, toPath: newPath)
+            return try File(path: newPath)
+        } catch {
+            throw OperationError.copyFailed(self)
+        }
     }
 }
 
@@ -778,6 +778,24 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public func empty(includeHidden: Bool = false) throws {
         try makeFileSequence(includeHidden: includeHidden).forEach { try $0.delete() }
         try makeSubfolderSequence(includeHidden: includeHidden).forEach { try $0.delete() }
+    }
+    
+    /**
+     *  Copy this folder to a new folder
+     *
+     *  - parameter folder: The folder that the folder should be copy to
+     *
+     *  - throws: `FileSystem.Item.OperationError.copyFailed` if the folder couldn't be copied
+     */
+    @discardableResult public func copy(to folder: Folder) throws -> Folder {
+        let newPath = folder.path + name
+        
+        do {
+            try fileManager.copyItem(atPath: path, toPath: newPath)
+            return try Folder(path: newPath)
+        } catch {
+            throw OperationError.copyFailed(self)
+        }
     }
 }
 
