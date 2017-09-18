@@ -260,6 +260,33 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCopyingFiles() {
+        performTest {
+            let file = try folder.createFile(named: "A")
+            try file.write(string: "content")
+            
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try file.copy(to: subfolder)
+            try XCTAssertNotNil(folder.file(named: "A"))
+            try XCTAssertNotNil(subfolder.file(named: "A"))
+            try XCTAssertEqual(file.read(), subfolder.file(named: "A").read())
+            XCTAssertEqual(folder.files.count, 1)
+        }
+    }
+    
+    func testCopyingFolders() {
+        performTest {
+            let copyingFolder = try folder.createSubfolder(named: "A")
+            
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try copyingFolder.copy(to: subfolder)
+            XCTAssertTrue(folder.containsSubfolder(named: "A"))
+            XCTAssertTrue(subfolder.containsSubfolder(named: "A"))
+            XCTAssertEqual(folder.subfolders.count, 2)
+            XCTAssertEqual(subfolder.subfolders.count, 1)
+        }
+    }
+    
     func testEnumeratingFiles() {
         performTest {
             try folder.createFile(named: "1")
