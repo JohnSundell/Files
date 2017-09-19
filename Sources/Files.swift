@@ -167,7 +167,7 @@ public class FileSystem {
             }
 
             let endIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
-            return name.substring(to: endIndex)
+            return String(name[..<endIndex])
         }
         
         /// Any extension that the item has
@@ -341,7 +341,8 @@ public class FileSystem {
         }
 
         do {
-            let name = path.substring(from: path.index(path.startIndex, offsetBy: parentPath.characters.count + 1))
+            let index = path.index(path.startIndex, offsetBy: parentPath.characters.count + 1)
+            let name = String(path[index...])
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
             throw File.Error.writeFailed
@@ -999,7 +1000,7 @@ private extension FileManager {
         var filledIn = false
 
         while let parentReferenceRange = path.range(of: "../") {
-            let currentFolderPath = path.substring(to: parentReferenceRange.lowerBound)
+            let currentFolderPath = String(path[..<parentReferenceRange.lowerBound])
 
             guard let currentFolder = try? Folder(path: currentFolderPath) else {
                 throw FileSystem.Item.PathError.invalid(path)
