@@ -144,19 +144,19 @@ public class FileSystem {
                 }
             }
 
-			/// A string describing the error
-			public var description: String {
-				switch self {
-				case .renameFailed(let item):
-					return "Failed to rename item: \(item)"
-				case .moveFailed(let item):
-					return "Failed to move item: \(item)"
-				case .copyFailed(let item):
-					return "Failed to copy item: \(item)"
-				case .deleteFailed(let item):
-					return "Failed to delete item: \(item)"
-				}
-			}
+            /// A string describing the error
+            public var description: String {
+                switch self {
+                case .renameFailed(let item):
+                    return "Failed to rename item: \(item)"
+                case .moveFailed(let item):
+                    return "Failed to move item: \(item)"
+                case .copyFailed(let item):
+                    return "Failed to copy item: \(item)"
+                case .deleteFailed(let item):
+                    return "Failed to delete item: \(item)"
+                }
+            }
         }
         
         /// Operator used to compare two instances for equality
@@ -173,7 +173,7 @@ public class FileSystem {
         
         /// The name of the item (including any extension)
         public private(set) var name: String
-        
+
         /// The name of the item (excluding any extension)
         public var nameExcludingExtension: String {
             guard let `extension` = `extension` else {
@@ -430,15 +430,15 @@ public final class File: FileSystem.Item, FileSystemIterable {
         /// Thrown when a file couldn't be read, either because it was malformed or because it has been deleted
         case readFailed
 
-		/// A string describing the error
-		public var description: String {
-			switch self {
-			case .writeFailed:
-				return "Failed to write to file"
-			case .readFailed:
-				return "Failed to read file"
-			}
-		}
+        /// A string describing the error
+        public var description: String {
+            switch self {
+            case .writeFailed:
+                return "Failed to write to file"
+            case .readFailed:
+                return "Failed to read file"
+            }
+        }
     }
     
     /**
@@ -557,15 +557,15 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
         case creatingSubfolderFailed
 
-		/// A string describing the error
-		public var description: String {
-			switch self {
-			case .creatingFolderFailed:
-				return "Failed to create folder"
-			case .creatingSubfolderFailed:
-				return "Failed to create subfolder"
-			}
-		}
+        /// A string describing the error
+        public var description: String {
+            switch self {
+            case .creatingFolderFailed:
+                return "Failed to create folder"
+            case .creatingSubfolderFailed:
+                return "Failed to create subfolder"
+            }
+        }
     }
     
     /// The sequence of files that are contained within this folder (non-recursive)
