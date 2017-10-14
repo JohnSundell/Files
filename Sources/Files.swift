@@ -84,7 +84,7 @@ public class FileSystem {
         }
         
         /// Error type used for failed operations run on files or folders
-        public enum OperationError: Error, Equatable {
+        public enum OperationError: Error, Equatable, CustomStringConvertible {
             /// Thrown when a file or folder couldn't be renamed (contains the item)
             case renameFailed(Item)
             /// Thrown when a file or folder couldn't be moved (contains the item)
@@ -143,6 +143,20 @@ public class FileSystem {
                     }
                 }
             }
+
+			/// A string describing the error
+			public var description: String {
+				switch self {
+				case .renameFailed(let item):
+					return "Failed to rename item: \(item)"
+				case .moveFailed(let item):
+					return "Failed to move item: \(item)"
+				case .copyFailed(let item):
+					return "Failed to copy item: \(item)"
+				case .deleteFailed(let item):
+					return "Failed to delete item: \(item)"
+				}
+			}
         }
         
         /// Operator used to compare two instances for equality
@@ -410,11 +424,21 @@ public class FileSystem {
  */
 public final class File: FileSystem.Item, FileSystemIterable {
     /// Error type specific to file-related operations
-    public enum Error: Swift.Error {
+    public enum Error: Swift.Error, CustomStringConvertible {
         /// Thrown when a file couldn't be written to
         case writeFailed
         /// Thrown when a file couldn't be read, either because it was malformed or because it has been deleted
         case readFailed
+
+		/// A string describing the error
+		public var description: String {
+			switch self {
+			case .writeFailed:
+				return "Failed to write to file"
+			case .readFailed:
+				return "Failed to read file"
+			}
+		}
     }
     
     /**
@@ -526,12 +550,22 @@ public final class File: FileSystem.Item, FileSystemIterable {
  */
 public final class Folder: FileSystem.Item, FileSystemIterable {
     /// Error type specific to folder-related operations
-    public enum Error: Swift.Error {
+    public enum Error: Swift.Error, CustomStringConvertible {
         /// Thrown when a folder couldn't be created
         case creatingFolderFailed
 
         @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
         case creatingSubfolderFailed
+
+		/// A string describing the error
+		public var description: String {
+			switch self {
+			case .creatingFolderFailed:
+				return "Failed to create folder"
+			case .creatingSubfolderFailed:
+				return "Failed to create subfolder"
+			}
+		}
     }
     
     /// The sequence of files that are contained within this folder (non-recursive)
