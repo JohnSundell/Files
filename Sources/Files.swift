@@ -776,7 +776,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  If `recursive = true` the folder tree will be traversed depth-first
      */
     public func makeFileSequence(recursive: Bool = false, includeHidden: Bool = false) -> FileSystemSequence<File> {
-        return FileSystemSequence(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
+        return FileSystemSequence(folder: self, recursive: recursive, includeHidden: includeHidden, using: fileManager)
     }
     
     /**
@@ -788,7 +788,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  If `recursive = true` the folder tree will be traversed depth-first
      */
     public func makeSubfolderSequence(recursive: Bool = false, includeHidden: Bool = false) -> FileSystemSequence<Folder> {
-        return FileSystemSequence(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
+        return FileSystemSequence(folder: self, recursive: recursive, includeHidden: includeHidden, using: fileManager)
     }
 
     /**
@@ -869,14 +869,14 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
         forEach { item = $0 }
         return item
     }
-    
-    private let path: String
+
+    private let folder: Folder
     private let recursive: Bool
     private let includeHidden: Bool
     private let fileManager: FileManager
-    
-    fileprivate init(path: String, recursive: Bool, includeHidden: Bool, using fileManager: FileManager) {
-        self.path = path
+
+    fileprivate init(folder: Folder, recursive: Bool, includeHidden: Bool, using fileManager: FileManager) {
+        self.folder = folder
         self.recursive = recursive
         self.includeHidden = includeHidden
         self.fileManager = fileManager
@@ -884,7 +884,7 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
     
     /// Create an iterator to use to iterate over the sequence
     public func makeIterator() -> FileSystemIterator<T> {
-        return FileSystemIterator(path: path, recursive: recursive, includeHidden: includeHidden, using: fileManager)
+        return FileSystemIterator(folder: folder, recursive: recursive, includeHidden: includeHidden, using: fileManager)
     }
     
     /// Move all the items in this sequence to a new folder. See `FileSystem.Item.move(to:)` for more info.
@@ -895,20 +895,21 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
 
 /// Iterator used to iterate over an instance of `FileSystemSequence`
 public class FileSystemIterator<T: FileSystem.Item>: IteratorProtocol where T: FileSystemIterable {
-    private let path: String
+    private let folder: Folder
     private let recursive: Bool
     private let includeHidden: Bool
     private let fileManager: FileManager
-    private var itemNames: [String]
+    private lazy var itemNames: [String] = {
+        self.fileManager.itemNames(inFolderAtPath: self.folder.path)
+    }()
     private lazy var childIteratorQueue = [FileSystemIterator]()
     private var currentChildIterator: FileSystemIterator?
-    
-    fileprivate init(path: String, recursive: Bool, includeHidden: Bool, using fileManager: FileManager) {
-        self.path = path
+
+    fileprivate init(folder: Folder, recursive: Bool, includeHidden: Bool, using fileManager: FileManager) {
+        self.folder = folder
         self.recursive = recursive
         self.includeHidden = includeHidden
         self.fileManager = fileManager
-        self.itemNames = fileManager.itemNames(inFolderAtPath: path)
     }
     
     /// Advance the iterator to the next element
@@ -934,12 +935,11 @@ public class FileSystemIterator<T: FileSystem.Item>: IteratorProtocol where T: F
             return next()
         }
         
-        let nextItemPath = path + nextItemName
+        let nextItemPath = folder.path + nextItemName
         let nextItem = try? T(path: nextItemPath, using: fileManager)
-        
-        if recursive && nextItem?.kind != .file {
-            let childPath = nextItemPath + "/"
-            let child = FileSystemIterator(path: childPath, recursive: true, includeHidden: includeHidden, using: fileManager)
+
+        if recursive, let folder = (nextItem as? Folder) ?? (try? Folder(path: nextItemPath))  {
+            let child = FileSystemIterator(folder: folder, recursive: true, includeHidden: includeHidden, using: fileManager)
             childIteratorQueue.append(child)
         }
         
