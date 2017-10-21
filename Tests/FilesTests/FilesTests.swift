@@ -381,7 +381,7 @@ class FilesTests: XCTestCase {
             let sequence = folder.makeSubfolderSequence(recursive: true)
 
             for folder in sequence {
-                try! folder.rename(to: "Folder " + folder.name)
+                try folder.rename(to: "Folder " + folder.name)
             }
 
             let expectedNames = ["Folder 1", "Folder 1A", "Folder 1B", "Folder 2", "Folder 2A", "Folder 2B"]
