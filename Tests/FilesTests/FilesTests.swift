@@ -686,6 +686,7 @@ class FilesTests: XCTestCase {
         ("testEnumeratingFilesRecursively", testEnumeratingFilesRecursively),
         ("testEnumeratingSubfolders", testEnumeratingSubfolders),
         ("testEnumeratingSubfoldersRecursively", testEnumeratingSubfoldersRecursively),
+        ("testRenamingFoldersWhileEnumeratingSubfoldersRecursively", testRenamingFoldersWhileEnumeratingSubfoldersRecursively),
         ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),
