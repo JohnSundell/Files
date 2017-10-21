@@ -1,5 +1,6 @@
 os: linux
 language: generic
+osx_image: xcode9
 sudo: required
 dist: trusty
 install:
