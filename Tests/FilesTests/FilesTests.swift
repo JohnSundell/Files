@@ -366,6 +366,30 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(sequence.count, 6)
         }
     }
+
+    func testRenamingFoldersWhileEnumeratingSubfoldersRecursively() {
+        performTest {
+            let subfolder1 = try folder.createSubfolder(named: "1")
+            let subfolder2 = try folder.createSubfolder(named: "2")
+
+            try subfolder1.createSubfolder(named: "1A")
+            try subfolder1.createSubfolder(named: "1B")
+
+            try subfolder2.createSubfolder(named: "2A")
+            try subfolder2.createSubfolder(named: "2B")
+
+            let sequence = folder.makeSubfolderSequence(recursive: true)
+
+            for folder in sequence {
+                try folder.rename(to: "Folder " + folder.name)
+            }
+
+            let expectedNames = ["Folder 1", "Folder 1A", "Folder 1B", "Folder 2", "Folder 2A", "Folder 2B"]
+
+            XCTAssertEqual(sequence.names.sorted(), expectedNames)
+            XCTAssertEqual(sequence.count, 6)
+        }
+    }
     
     func testFirstAndLastInFileSequence() {
         performTest {
@@ -662,6 +686,7 @@ class FilesTests: XCTestCase {
         ("testEnumeratingFilesRecursively", testEnumeratingFilesRecursively),
         ("testEnumeratingSubfolders", testEnumeratingSubfolders),
         ("testEnumeratingSubfoldersRecursively", testEnumeratingSubfoldersRecursively),
+        ("testRenamingFoldersWhileEnumeratingSubfoldersRecursively", testRenamingFoldersWhileEnumeratingSubfoldersRecursively),
         ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),
