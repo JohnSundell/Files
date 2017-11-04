@@ -180,7 +180,7 @@ public class FileSystem {
                 return name
             }
 
-            let endIndex = name.index(name.endIndex, offsetBy: -`extension`.characters.count - 1)
+            let endIndex = name.index(name.endIndex, offsetBy: -`extension`.count - 1)
             return String(name[..<endIndex])
         }
         
@@ -355,7 +355,7 @@ public class FileSystem {
         }
 
         do {
-            let index = path.index(path.startIndex, offsetBy: parentPath.characters.count + 1)
+            let index = path.index(path.startIndex, offsetBy: parentPath.count + 1)
             let name = String(path[index...])
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
