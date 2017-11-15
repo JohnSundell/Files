@@ -406,7 +406,7 @@ public class FileSystem {
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.OperationError.creatingFolderFailed`
      *
      *  - returns: The folder that was created
      */
@@ -416,7 +416,7 @@ public class FileSystem {
             try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
-            throw Folder.Error.creatingFolderFailed
+            throw Folder.OperationError.creatingFolderFailed
         }
     }
 
@@ -570,8 +570,8 @@ public final class File: FileSystem.Item, FileSystemIterable {
  *  You initialize this class with a path, or by asking a folder to return a subfolder for a given name
  */
 public final class Folder: FileSystem.Item, FileSystemIterable {
-    /// Error type specific to folder-related operations
-    public enum Error: Swift.Error, CustomStringConvertible {
+    /// Error type used for folder-related operations
+    public enum OperationError: Swift.Error, CustomStringConvertible {
         /// Thrown when a folder couldn't be created
         case creatingFolderFailed
 
@@ -758,7 +758,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to create
      *
-     *  - throws: `Folder.Error.creatingFolderFailed` if the subfolder couldn't be created
+     *  - throws: `Folder.OperationError.creatingFolderFailed` if the subfolder couldn't be created
      *
      *  - returns: The folder that was created
      */
@@ -769,7 +769,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.createDirectory(atPath: subfolderPath, withIntermediateDirectories: false, attributes: nil)
             return try Folder(path: subfolderPath, using: fileManager)
         } catch {
-            throw Error.creatingFolderFailed
+            throw OperationError.creatingFolderFailed
         }
     }
 
