@@ -87,11 +87,11 @@ public class FileSystem {
         public enum OperationError: Error, Equatable, CustomStringConvertible {
             /// Thrown when a file or folder couldn't be renamed (contains the item)
             case renameFailed(Item)
-            /// Thrown when a file or folder couldn't be moved (contains the item)
-            case moveFailed(Item)
-            /// Thrown when a file or folder couldn't be copied (contains the item)
+            /// Thrown when a file or folder couldn't be moved (contains the item and the underlying error)
+            case moveFailed(Item, Error)
+            /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
             case copyFailed(Item, Error)
-            /// Thrown when a file or folder couldn't be deleted (contains the item)
+            /// Thrown when a file or folder couldn't be deleted (contains the item and the underlying error)
             case deleteFailed(Item, Error)
             
             /// Operator used to compare two instances for equality
@@ -101,18 +101,18 @@ public class FileSystem {
                     switch rhs {
                     case .renameFailed(let itemB):
                         return itemA == itemB
-                    case .moveFailed(_):
+                    case .moveFailed(_,_):
                         return false
                     case .copyFailed(_,_):
                         return false
                     case .deleteFailed(_,_):
                         return false
                     }
-                case .moveFailed(let itemA):
+                case .moveFailed(let itemA,_):
                     switch rhs {
                     case .renameFailed(_):
                         return false
-                    case .moveFailed(let itemB):
+                    case .moveFailed(let itemB,_):
                         return itemA == itemB
                     case .copyFailed(_,_):
                         return false
@@ -123,7 +123,7 @@ public class FileSystem {
                     switch rhs {
                     case .renameFailed(_):
                         return false
-                    case .moveFailed(_):
+                    case .moveFailed(_,_):
                         return false
                     case .copyFailed(let itemB,_):
                         return itemA == itemB
@@ -134,7 +134,7 @@ public class FileSystem {
                     switch rhs {
                     case .renameFailed(_):
                         return false
-                    case .moveFailed(_):
+                    case .moveFailed(_,_):
                         return false
                     case .copyFailed(_,_):
                         return false
@@ -149,8 +149,8 @@ public class FileSystem {
                 switch self {
                 case .renameFailed(let item):
                     return "Failed to rename item: \(item)"
-                case .moveFailed(let item):
-                    return "Failed to move item: \(item)"
+                case .moveFailed(let item, let error):
+                    return "Failed to move item: \(item). Error: \(String(describing: error))"
                 case .copyFailed(let item, let error):
                     return "Failed to copy item: \(item). Error: \(String(describing: error))"
                 case .deleteFailed(let item, let error):
@@ -293,7 +293,7 @@ public class FileSystem {
                 try fileManager.moveItem(atPath: path, toPath: newPath)
                 path = newPath
             } catch {
-                throw OperationError.moveFailed(self)
+                throw OperationError.moveFailed(self, error)
             }
         }
         
