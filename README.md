@@ -3,11 +3,18 @@
 </p>
 
 <p align="center">
+    <a href="https://dashboard.buddybuild.com/apps/5932f7d9b0c2b000015d6b79/build/latest?branch=master">
+        <img src="https://dashboard.buddybuild.com/api/statusImage?appID=5932f7d9b0c2b000015d6b79&branch=master&build=latest" alt="BuddyBuild" />
+    </a>
+    <img src="https://img.shields.io/badge/Swift-4.0-orange.svg" />
     <a href="https://cocoapods.org/pods/Files">
         <img src="https://img.shields.io/cocoapods/v/Files.svg" alt="CocoaPods" />
     </a>
     <a href="https://github.com/Carthage/Carthage">
         <img src="https://img.shields.io/badge/carthage-compatible-4BC51D.svg?style=flat" alt="Carthage" />
+    </a>
+    <a href="https://github.com/JohnSundell/Marathon">
+        <img src="https://img.shields.io/badge/marathon-compatible-4BC51D.svg?style=flat" alt="Marathon" />
     </a>
     <a href="https://swift.org/package-manager">
         <img src="https://img.shields.io/badge/spm-compatible-brightgreen.svg?style=flat" alt="Swift Package Manager" />

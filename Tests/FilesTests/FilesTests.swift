@@ -260,6 +260,33 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCopyingFiles() {
+        performTest {
+            let file = try folder.createFile(named: "A")
+            try file.write(string: "content")
+            
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try file.copy(to: subfolder)
+            try XCTAssertNotNil(folder.file(named: "A"))
+            try XCTAssertNotNil(subfolder.file(named: "A"))
+            try XCTAssertEqual(file.read(), subfolder.file(named: "A").read())
+            XCTAssertEqual(folder.files.count, 1)
+        }
+    }
+    
+    func testCopyingFolders() {
+        performTest {
+            let copyingFolder = try folder.createSubfolder(named: "A")
+            
+            let subfolder = try folder.createSubfolder(named: "folder")
+            try copyingFolder.copy(to: subfolder)
+            XCTAssertTrue(folder.containsSubfolder(named: "A"))
+            XCTAssertTrue(subfolder.containsSubfolder(named: "A"))
+            XCTAssertEqual(folder.subfolders.count, 2)
+            XCTAssertEqual(subfolder.subfolders.count, 1)
+        }
+    }
+    
     func testEnumeratingFiles() {
         performTest {
             try folder.createFile(named: "1")
@@ -335,6 +362,30 @@ class FilesTests: XCTestCase {
             
             let expectedNames = ["1", "1A", "1B", "2", "2A", "2B"]
             let sequence = folder.makeSubfolderSequence(recursive: true)
+            XCTAssertEqual(sequence.names.sorted(), expectedNames)
+            XCTAssertEqual(sequence.count, 6)
+        }
+    }
+
+    func testRenamingFoldersWhileEnumeratingSubfoldersRecursively() {
+        performTest {
+            let subfolder1 = try folder.createSubfolder(named: "1")
+            let subfolder2 = try folder.createSubfolder(named: "2")
+
+            try subfolder1.createSubfolder(named: "1A")
+            try subfolder1.createSubfolder(named: "1B")
+
+            try subfolder2.createSubfolder(named: "2A")
+            try subfolder2.createSubfolder(named: "2B")
+
+            let sequence = folder.makeSubfolderSequence(recursive: true)
+
+            for folder in sequence {
+                try folder.rename(to: "Folder " + folder.name)
+            }
+
+            let expectedNames = ["Folder 1", "Folder 1A", "Folder 1B", "Folder 2", "Folder 2A", "Folder 2B"]
+
             XCTAssertEqual(sequence.names.sorted(), expectedNames)
             XCTAssertEqual(sequence.count, 6)
         }
@@ -447,6 +498,25 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testMovingFolderHiddenContents() {
+        performTest {
+            let parentFolder = try folder.createSubfolder(named: "parent")
+            try parentFolder.createFile(named: ".hidden")
+            try parentFolder.createSubfolder(named: ".folder")
+            
+            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
+            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+            
+            let newParentFolder = try folder.createSubfolder(named: "parentB")
+            try parentFolder.moveContents(to: newParentFolder, includeHidden: true)
+            
+            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [])
+            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [])
+            XCTAssertEqual(newParentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
+            XCTAssertEqual(newParentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+        }
+    }
+
     func testAccessingHomeFolder() {
         XCTAssertNotNil(FileSystem().homeFolder)
         XCTAssertNotNil(Folder.home)
@@ -545,6 +615,13 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCreatingFileWithString() {
+        performTest {
+            let file = try folder.createFile(named: "file", contents: "Hello world")
+            XCTAssertEqual(try file.readAsString(), "Hello world")
+        }
+    }
+    
     func testUsingCustomFileManager() {
         class FileManagerMock: FileManager {
             var noFilesExist = false
@@ -598,18 +675,30 @@ class FilesTests: XCTestCase {
     static var allTests = [
         ("testCreatingAndDeletingFile", testCreatingAndDeletingFile),
         ("testCreatingAndDeletingFolder", testCreatingAndDeletingFolder),
+        ("testReadingFileAsString", testReadingFileAsString),
+        ("testReadingFileAsInt", testReadingFileAsInt),
         ("testRenamingFile", testRenamingFile),
         ("testRenamingFileWithNameIncludingExtension", testRenamingFileWithNameIncludingExtension),
         ("testReadingFileWithRelativePath", testReadingFileWithRelativePath),
         ("testReadingFileWithTildePath", testReadingFileWithTildePath),
+        ("testReadingFileFromCurrentFoldersParent", testReadingFileFromCurrentFoldersParent),
+        ("testReadingFileWithMultipleParentReferencesWithinPath", testReadingFileWithMultipleParentReferencesWithinPath),
         ("testRenamingFolder", testRenamingFolder),
+        ("testAccesingFileByPath", testAccesingFileByPath),
+        ("testAccessingSubfolderByPath", testAccessingSubfolderByPath),
+        ("testEmptyingFolder", testEmptyingFolder),
+        ("testEmptyingFolderWithHiddenFiles", testEmptyingFolderWithHiddenFiles),
         ("testMovingFiles", testMovingFiles),
+        ("testCopyingFiles", testCopyingFiles),
+        ("testCopyingFolders", testCopyingFolders),
         ("testEnumeratingFiles", testEnumeratingFiles),
         ("testEnumeratingFilesIncludingHidden", testEnumeratingFilesIncludingHidden),
         ("testEnumeratingFilesRecursively", testEnumeratingFilesRecursively),
         ("testEnumeratingSubfolders", testEnumeratingSubfolders),
         ("testEnumeratingSubfoldersRecursively", testEnumeratingSubfoldersRecursively),
+        ("testRenamingFoldersWhileEnumeratingSubfoldersRecursively", testRenamingFoldersWhileEnumeratingSubfoldersRecursively),
         ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
+        ("testModificationDate", testModificationDate),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),
         ("testOpeningFileWithEmptyPathThrows", testOpeningFileWithEmptyPathThrows),
@@ -618,8 +707,19 @@ class FilesTests: XCTestCase {
         ("testWritingStringToFile", testWritingStringToFile),
         ("testFileDescription", testFileDescription),
         ("testFolderDescription", testFolderDescription),
+        ("testMovingFolderContents", testMovingFolderContents),
+        ("testMovingFolderHiddenContents", testMovingFolderHiddenContents),
         ("testAccessingHomeFolder", testAccessingHomeFolder),
+        ("testAccessingCurrentWorkingDirectory", testAccessingCurrentWorkingDirectory),
         ("testNameExcludingExtensionWithLongFileName", testNameExcludingExtensionWithLongFileName),
+        ("testCreatingFileFromFileSystem", testCreatingFileFromFileSystem),
+        ("testCreateFileFromFileSystemIfNeeded", testCreateFileFromFileSystemIfNeeded),
+        ("testCreatingFolderFromFileSystem", testCreatingFolderFromFileSystem),
+        ("testCreatingFolderWithTildePathFromFileSystem", testCreatingFolderWithTildePathFromFileSystem),
+        ("testCreateFileIfNeeded", testCreateFileIfNeeded),
+        ("testCreateFolderIfNeeded", testCreateFolderIfNeeded),
+        ("testCreateSubfolderIfNeeded", testCreateSubfolderIfNeeded),
+        ("testCreatingFileWithString", testCreatingFileWithString),
         ("testUsingCustomFileManager", testUsingCustomFileManager)
     ]
 }
