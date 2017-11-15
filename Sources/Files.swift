@@ -90,7 +90,7 @@ public class FileSystem {
             /// Thrown when a file or folder couldn't be moved (contains the item)
             case moveFailed(Item)
             /// Thrown when a file or folder couldn't be copied (contains the item)
-            case copyFailed(Item)
+            case copyFailed(Item, Error)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item, Error)
             
@@ -103,7 +103,7 @@ public class FileSystem {
                         return itemA == itemB
                     case .moveFailed(_):
                         return false
-                    case .copyFailed(_):
+                    case .copyFailed(_,_):
                         return false
                     case .deleteFailed(_,_):
                         return false
@@ -114,18 +114,18 @@ public class FileSystem {
                         return false
                     case .moveFailed(let itemB):
                         return itemA == itemB
-                    case .copyFailed(_):
+                    case .copyFailed(_,_):
                         return false
                     case .deleteFailed(_,_):
                         return false
                     }
-                case .copyFailed(let itemA):
+                case .copyFailed(let itemA,_):
                     switch rhs {
                     case .renameFailed(_):
                         return false
                     case .moveFailed(_):
                         return false
-                    case .copyFailed(let itemB):
+                    case .copyFailed(let itemB,_):
                         return itemA == itemB
                     case .deleteFailed(_,_):
                         return false
@@ -136,7 +136,7 @@ public class FileSystem {
                         return false
                     case .moveFailed(_):
                         return false
-                    case .copyFailed(_):
+                    case .copyFailed(_,_):
                         return false
                     case .deleteFailed(let itemB,_):
                         return itemA == itemB
@@ -151,8 +151,8 @@ public class FileSystem {
                     return "Failed to rename item: \(item)"
                 case .moveFailed(let item):
                     return "Failed to move item: \(item)"
-                case .copyFailed(let item):
-                    return "Failed to copy item: \(item)"
+                case .copyFailed(let item, let error):
+                    return "Failed to copy item: \(item). Error: \(String(describing: error))"
                 case .deleteFailed(let item, let error):
                   return "Failed to delete item: \(item). Error: \(String(describing: error))"
                 }
@@ -539,7 +539,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
             try fileManager.copyItem(atPath: path, toPath: newPath)
             return try File(path: newPath)
         } catch {
-            throw OperationError.copyFailed(self)
+            throw OperationError.copyFailed(self, error)
         }
     }
 }
@@ -829,7 +829,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.copyItem(atPath: path, toPath: newPath)
             return try Folder(path: newPath)
         } catch {
-            throw OperationError.copyFailed(self)
+            throw OperationError.copyFailed(self, error)
         }
     }
 }
