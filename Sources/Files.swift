@@ -87,11 +87,21 @@ public class FileSystem {
         public enum OperationError: Error, Equatable, CustomStringConvertible {
           
             /// Error type used for failed rename operations run on files or folders
-            public enum RenameFailure: Error {
+            public enum RenameFailure: Error, CustomStringConvertible {
               /// Thrown when attempting to rename a root folder
               case parentFolderMissing
               /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
               case other(Error)
+              
+              /// A string describing the error
+              public var description: String {
+                switch self {
+                case .parentFolderMissing:
+                  return "Root folder name change is forbidden."
+                case .other(let error):
+                  return String(describing: error)
+                }
+              }
             }
           
             /// Thrown when a file or folder couldn't be renamed (contains the item and the underlying error)
@@ -156,8 +166,8 @@ public class FileSystem {
             /// A string describing the error
             public var description: String {
                 switch self {
-                case .renameFailed(let item):
-                    return "Failed to rename item: \(item)"
+                case .renameFailed(let item, let error):
+                    return "Failed to rename item: \(item). Error: \(String(describing: error))"
                 case .moveFailed(let item, let error):
                     return "Failed to move item: \(item). Error: \(String(describing: error))"
                 case .copyFailed(let item, let error):
