@@ -85,7 +85,6 @@ public class FileSystem {
         
         /// Error type used for failed operations run on files or folders
         public enum OperationError: Error, Equatable, CustomStringConvertible {
-          
             /// Error type used for failed rename operations run on files or folders
             public enum RenameError: Error, CustomStringConvertible {
               /// Thrown when attempting to rename a root folder
@@ -116,14 +115,25 @@ public class FileSystem {
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
                 switch lhs {
-                case .renameFailed(let itemA,_):
+                case .deleteFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(let itemB,_):
-                        return itemA == itemB
+                    case .renameFailed(_,_):
+                        return false
                     case .moveFailed(_,_):
                         return false
                     case .copyFailed(_,_):
                         return false
+                    case .deleteFailed(let itemB,_):
+                        return itemA == itemB
+                    }
+                case .copyFailed(let itemA,_):
+                    switch rhs {
+                    case .renameFailed(_,_):
+                        return false
+                    case .moveFailed(_,_):
+                        return false
+                    case .copyFailed(let itemB,_):
+                        return itemA == itemB
                     case .deleteFailed(_,_):
                         return false
                     }
@@ -138,27 +148,16 @@ public class FileSystem {
                     case .deleteFailed(_,_):
                         return false
                     }
-                case .copyFailed(let itemA,_):
+                case .renameFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(_,_):
-                        return false
-                    case .moveFailed(_,_):
-                        return false
-                    case .copyFailed(let itemB,_):
+                    case .renameFailed(let itemB,_):
                         return itemA == itemB
-                    case .deleteFailed(_,_):
-                        return false
-                    }
-                case .deleteFailed(let itemA,_):
-                    switch rhs {
-                    case .renameFailed(_,_):
-                        return false
                     case .moveFailed(_,_):
                         return false
                     case .copyFailed(_,_):
                         return false
-                    case .deleteFailed(let itemB,_):
-                        return itemA == itemB
+                    case .deleteFailed(_,_):
+                        return false
                     }
                 }
             }
@@ -173,7 +172,7 @@ public class FileSystem {
                 case .copyFailed(let item, let error):
                     return "Failed to copy item: \(item). Error: \(String(describing: error))"
                 case .deleteFailed(let item, let error):
-                  return "Failed to delete item: \(item). Error: \(String(describing: error))"
+                    return "Failed to delete item: \(item). Error: \(String(describing: error))"
                 }
             }
         }
@@ -294,7 +293,7 @@ public class FileSystem {
                 name = newName
                 path = newPath
             } catch {
-                throw OperationError.renameFailed(self,.other(error))
+                throw OperationError.renameFailed(self, .other(error))
             }
         }
         
@@ -406,7 +405,7 @@ public class FileSystem {
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
-     *  - throws: `Folder.OperationError.creatingFolderFailed`
+     *  - throws: `Folder.OperationError.createFailed`
      *
      *  - returns: The folder that was created
      */
@@ -426,7 +425,7 @@ public class FileSystem {
      *  - parameter path: The path for which a folder should either be returned or created at. If the folder
      *                    is missing, any intermediate parent folders will also be created.
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.OperationError.createFailed`
      */
     @discardableResult public func createFolderIfNeeded(at path: String) throws -> Folder {
         if let existingFolder = try? Folder(path: path, using: fileManager) {
@@ -446,7 +445,6 @@ public final class File: FileSystem.Item, FileSystemIterable {
     
     /// Error type used for file-related operations
     public enum OperationError: Error, CustomStringConvertible {
-      
         /// Error type used for failed write operations run on files
         public enum WriteError: Error, CustomStringConvertible {
             /// Thrown when attempting to write at root.
@@ -513,7 +511,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - parameter path: The path of the file to create a representation of
      *  - parameter fileManager: Optionally give a custom file manager to use to look up the file
      *
-     *  - throws: `FileSystemItem.Error` in case an empty path was given, or if the path given doesn't
+     *  - throws: `File.PathError` in case an empty path was given, or if the path given doesn't
      *    point to a readable file.
      */
     public init(path: String, using fileManager: FileManager = .default) throws {
@@ -615,26 +613,17 @@ public final class File: FileSystem.Item, FileSystemIterable {
  *  You initialize this class with a path, or by asking a folder to return a subfolder for a given name
  */
 public final class Folder: FileSystem.Item, FileSystemIterable {
+    
     /// Error type used for folder-related operations
     public enum OperationError: Error, CustomStringConvertible {
         /// Thrown when a folder couldn't be created
         case createFailed(Error)
-        
-        @available(*, deprecated: 1.7.0, renamed: "createFailed()")
-        case creatingFolderFailed
-
-        @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
-        case creatingSubfolderFailed
 
         /// A string describing the error
         public var description: String {
             switch self {
             case .createFailed(let error):
                 return "Failed to create folder. Error: \(String(describing: error))"
-            case .creatingFolderFailed:
-                return "Failed to create folder"
-            case .creatingSubfolderFailed:
-                return "Failed to create subfolder"
             }
         }
     }
@@ -670,7 +659,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter path: The path of the folder to create a representation of
      *  - parameter fileManager: Optionally give a custom file manager to use to look up the folder
      *
-     *  - throws: `FileSystemItem.Error` in case an empty path was given, or if the path given doesn't
+     *  - throws: `Folder.PathError` in case an empty path was given, or if the path given doesn't
      *    point to a readable folder.
      */
     public init(path: String, using fileManager: FileManager = .default) throws {
@@ -692,7 +681,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter fileName: The name of the file to return
      *
-     *  - throws: `File.PathError.invalid` if the file couldn't be found
+     *  - throws: `Folder.PathError.invalid` if the file couldn't be found
      */
     public func file(named fileName: String) throws -> File {
         return try File(path: path + fileName, using: fileManager)
@@ -703,7 +692,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter filePath: The subpath of the file to return. Relative to this folder.
      *
-     *  - throws: `File.PathError.invalid` if the file couldn't be found
+     *  - throws: `Folder.PathError.invalid` if the file couldn't be found
      */
     public func file(atPath filePath: String) throws -> File {
         return try File(path: path + filePath, using: fileManager)
@@ -793,7 +782,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter dataExpression: An expression resulting in any data that a new file should contain.
      *                              Will only be evaluated & used in case a new file is created.
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     *  - throws: `File.OperationError.writeFailed` if the file couldn't be created
      */
     @discardableResult public func createFileIfNeeded(withName fileName: String, contents dataExpression: @autoclosure () -> Data = .init()) throws -> File {
         if let existingFile = try? file(named: fileName) {
@@ -808,7 +797,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to create
      *
-     *  - throws: `Folder.OperationError.creatingFolderFailed` if the subfolder couldn't be created
+     *  - throws: `Folder.OperationError.createFailed` if the subfolder couldn't be created
      *
      *  - returns: The folder that was created
      */
@@ -828,7 +817,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to either get or create
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.OperationError.createFailed`
      */
     @discardableResult public func createSubfolderIfNeeded(withName folderName: String) throws -> Folder {
         if let existingFolder = try? subfolder(named: folderName) {
@@ -867,6 +856,8 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter newParent: The new parent folder that the contents of this folder should be moved to
      *  - parameter includeHidden: Whether hidden (dot) files should be moved (default: false)
+     *
+     * - throws: `Folder.OperationError.moveFailed`
      */
     public func moveContents(to newParent: Folder, includeHidden: Bool = false) throws {
         try makeFileSequence(includeHidden: includeHidden).forEach { try $0.move(to: newParent) }
@@ -879,6 +870,8 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter includeHidden: Whether hidden files (dot) files contained within the folder should also be removed
      *
      *  This will still keep the folder itself on disk. If you wish to delete the folder as well, call `delete()` on it.
+     *
+     * - throws: `Folder.OperationError.deleteFailed`
      */
     public func empty(includeHidden: Bool = false) throws {
         try makeFileSequence(includeHidden: includeHidden).forEach { try $0.delete() }
@@ -890,7 +883,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folder: The folder that the folder should be copy to
      *
-     *  - throws: `FileSystem.Item.OperationError.copyFailed` if the folder couldn't be copied
+     *  - throws: `Folder.OperationError.copyFailed` if the folder couldn't be copied
      */
     @discardableResult public func copy(to folder: Folder) throws -> Folder {
         let newPath = folder.path + name
