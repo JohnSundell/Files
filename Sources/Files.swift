@@ -362,7 +362,7 @@ public class FileSystem {
      *  - parameter path: The path at which a file should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
-     *  - throws: `File.Error.writeFailed`
+     *  - throws: `File.OperationError.writeFailed`
      *
      *  - returns: The file that was created
      */
@@ -370,7 +370,7 @@ public class FileSystem {
         let path = try fileManager.absolutePath(for: path)
 
         guard let parentPath = fileManager.parentPath(for: path) else {
-            throw File.Error.writeFailed
+            throw File.OperationError.writeFailed
         }
 
         do {
@@ -378,7 +378,7 @@ public class FileSystem {
             let name = String(path[index...])
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
-            throw File.Error.writeFailed
+            throw File.OperationError.writeFailed
         }
     }
 
@@ -443,8 +443,9 @@ public class FileSystem {
  *  You initialize this class with a path, or by asking a folder to return a file for a given name
  */
 public final class File: FileSystem.Item, FileSystemIterable {
-    /// Error type specific to file-related operations
-    public enum Error: Swift.Error, CustomStringConvertible {
+  
+    /// Error type used for file-related operations
+    public enum OperationError: Swift.Error, CustomStringConvertible {
         /// Thrown when a file couldn't be written to
         case writeFailed
         /// Thrown when a file couldn't be read, either because it was malformed or because it has been deleted
@@ -477,24 +478,24 @@ public final class File: FileSystem.Item, FileSystemIterable {
     /**
      *  Read the data contained within this file
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read
+     *  - throws: `File.OperationError.readFailed` if the file's data couldn't be read
      */
     public func read() throws -> Data {
         do {
             return try Data(contentsOf: URL(fileURLWithPath: path))
         } catch {
-            throw Error.readFailed
+            throw OperationError.readFailed
         }
     }
 
     /**
      *  Read the data contained within this file, and convert it to a string
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a string
+     *  - throws: `File.OperationError.readFailed` if the file's data couldn't be read as a string
      */
     public func readAsString(encoding: String.Encoding = .utf8) throws -> String {
         guard let string = try String(data: read(), encoding: encoding) else {
-            throw Error.readFailed
+            throw OperationError.readFailed
         }
 
         return string
@@ -503,11 +504,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
     /**
      *  Read the data contained within this file, and convert it to an int
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as an int
+     *  - throws: `File.OperationError.readFailed` if the file's data couldn't be read as an int
      */
     public func readAsInt() throws -> Int {
         guard let int = try Int(readAsString()) else {
-            throw Error.readFailed
+            throw OperationError.readFailed
         }
 
         return int
@@ -518,13 +519,13 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter data: The data to write to the file
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be written to
+     *  - throws: `File.OperationError.writeFailed` if the file couldn't be written to
      */
     public func write(data: Data) throws {
         do {
             try data.write(to: URL(fileURLWithPath: path))
         } catch {
-            throw Error.writeFailed
+            throw OperationError.writeFailed
         }
     }
     
@@ -534,11 +535,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - parameter string: The string to write to the file
      *  - parameter encoding: Optionally give which encoding that the string should be encoded in (defaults to UTF-8)
      *
-     *  - throws: `File.Error.writeFailed` if the string couldn't be encoded, or written to the file
+     *  - throws: `File.OperationError.writeFailed` if the string couldn't be encoded, or written to the file
      */
     public func write(string: String, encoding: String.Encoding = .utf8) throws {
         guard let data = string.data(using: encoding) else {
-            throw Error.writeFailed
+            throw OperationError.writeFailed
         }
         
         try write(data: data)
@@ -704,7 +705,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter fileName: The name of the file to create
      *  - parameter data: Optionally give any data that the file should contain
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     *  - throws: `File.OperationError.writeFailed` if the file couldn't be created
      *
      *  - returns: The file that was created
      */
@@ -712,7 +713,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         let filePath = path + fileName
         
         guard fileManager.createFile(atPath: filePath, contents: data, attributes: nil) else {
-            throw File.Error.writeFailed
+            throw File.OperationError.writeFailed
         }
         
         return try File(path: filePath, using: fileManager)
