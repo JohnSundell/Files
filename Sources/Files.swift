@@ -85,8 +85,17 @@ public class FileSystem {
         
         /// Error type used for failed operations run on files or folders
         public enum OperationError: Error, Equatable, CustomStringConvertible {
-            /// Thrown when a file or folder couldn't be renamed (contains the item)
-            case renameFailed(Item)
+          
+            /// Error type used for failed rename operations run on files or folders
+            public enum RenameFailure: Error {
+              /// Thrown when attempting to rename a root folder
+              case parentFolderMissing
+              /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+              case other(Error)
+            }
+          
+            /// Thrown when a file or folder couldn't be renamed (contains the item and the underlying error)
+            case renameFailed(Item, RenameFailure)
             /// Thrown when a file or folder couldn't be moved (contains the item and the underlying error)
             case moveFailed(Item, Error)
             /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
@@ -97,9 +106,9 @@ public class FileSystem {
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
                 switch lhs {
-                case .renameFailed(let itemA):
+                case .renameFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(let itemB):
+                    case .renameFailed(let itemB,_):
                         return itemA == itemB
                     case .moveFailed(_,_):
                         return false
@@ -110,7 +119,7 @@ public class FileSystem {
                     }
                 case .moveFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(_):
+                    case .renameFailed(_,_):
                         return false
                     case .moveFailed(let itemB,_):
                         return itemA == itemB
@@ -121,7 +130,7 @@ public class FileSystem {
                     }
                 case .copyFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(_):
+                    case .renameFailed(_,_):
                         return false
                     case .moveFailed(_,_):
                         return false
@@ -132,7 +141,7 @@ public class FileSystem {
                     }
                 case .deleteFailed(let itemA,_):
                     switch rhs {
-                    case .renameFailed(_):
+                    case .renameFailed(_,_):
                         return false
                     case .moveFailed(_,_):
                         return false
@@ -248,7 +257,7 @@ public class FileSystem {
          */
         public func rename(to newName: String, keepExtension: Bool = true) throws {
             guard let parent = parent else {
-                throw OperationError.renameFailed(self)
+                throw OperationError.renameFailed(self, .parentFolderMissing)
             }
             
             var newName = newName
@@ -275,7 +284,7 @@ public class FileSystem {
                 name = newName
                 path = newPath
             } catch {
-                throw OperationError.renameFailed(self)
+                throw OperationError.renameFailed(self,.other(error))
             }
         }
         
