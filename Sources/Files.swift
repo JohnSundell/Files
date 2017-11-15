@@ -87,7 +87,7 @@ public class FileSystem {
         public enum OperationError: Error, Equatable, CustomStringConvertible {
           
             /// Error type used for failed rename operations run on files or folders
-            public enum RenameFailure: Error, CustomStringConvertible {
+            public enum RenameError: Error, CustomStringConvertible {
               /// Thrown when attempting to rename a root folder
               case parentFolderMissing
               /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
@@ -105,7 +105,7 @@ public class FileSystem {
             }
           
             /// Thrown when a file or folder couldn't be renamed (contains the item and the underlying error)
-            case renameFailed(Item, RenameFailure)
+            case renameFailed(Item, RenameError)
             /// Thrown when a file or folder couldn't be moved (contains the item and the underlying error)
             case moveFailed(Item, Error)
             /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
@@ -370,7 +370,7 @@ public class FileSystem {
         let path = try fileManager.absolutePath(for: path)
 
         guard let parentPath = fileManager.parentPath(for: path) else {
-            throw File.OperationError.writeFailed
+            throw File.OperationError.writeFailed(.parentFolderMissing)
         }
 
         do {
@@ -378,7 +378,7 @@ public class FileSystem {
             let name = String(path[index...])
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
-            throw File.OperationError.writeFailed
+            throw File.OperationError.writeFailed(.other(error))
         }
     }
 
@@ -416,7 +416,7 @@ public class FileSystem {
             try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
-            throw Folder.OperationError.creatingFolderFailed
+            throw Folder.OperationError.createFailed(error)
         }
     }
 
@@ -443,21 +443,66 @@ public class FileSystem {
  *  You initialize this class with a path, or by asking a folder to return a file for a given name
  */
 public final class File: FileSystem.Item, FileSystemIterable {
-  
+    
     /// Error type used for file-related operations
-    public enum OperationError: Swift.Error, CustomStringConvertible {
-        /// Thrown when a file couldn't be written to
-        case writeFailed
-        /// Thrown when a file couldn't be read, either because it was malformed or because it has been deleted
-        case readFailed
+    public enum OperationError: Error, CustomStringConvertible {
+      
+        /// Error type used for failed write operations run on files
+        public enum WriteError: Error, CustomStringConvertible {
+            /// Thrown when attempting to write at root.
+            case parentFolderMissing
+            /// Throw when data is malformed or empty.
+            case voidData
+            /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+            case other(Error)
+            /// Thrown when the error is unforseen.
+            case unknown
+            
+            /// A string describing the error
+            public var description: String {
+                switch self {
+                case .parentFolderMissing:
+                    return "Writting at root path is forbidden."
+                case .voidData:
+                    return "Invalid data."
+                case .other(let error):
+                    return String(describing: error)
+                case .unknown:
+                    return "Unknown error."
+                }
+            }
+        }
+        
+        /// Error type used for failed read operations run on files
+        public enum ReadError: Error, CustomStringConvertible {
+            /// Throw when data is malformed or empty.
+            case voidData
+            /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+            case other(Error)
+            
+            /// A string describing the error
+            public var description: String {
+                switch self {
+                case .voidData:
+                    return "Invalid data."
+                case .other(let error):
+                    return String(describing: error)
+                }
+            }
+        }
+      
+        /// Thrown when a file couldn't be written to (contains underlying error)
+        case writeFailed(WriteError)
+        /// Thrown when a file couldn't be read (contains underlying error)
+        case readFailed(ReadError)
 
         /// A string describing the error
         public var description: String {
             switch self {
-            case .writeFailed:
-                return "Failed to write to file"
-            case .readFailed:
-                return "Failed to read file"
+            case .writeFailed(let error):
+              return "Failed to write to file. Error: \(String(describing: error))."
+            case .readFailed(let error):
+              return "Failed to read file. Error: \(String(describing: error))."
             }
         }
     }
@@ -484,7 +529,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
         do {
             return try Data(contentsOf: URL(fileURLWithPath: path))
         } catch {
-            throw OperationError.readFailed
+            throw OperationError.readFailed(.other(error))
         }
     }
 
@@ -494,10 +539,10 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - throws: `File.OperationError.readFailed` if the file's data couldn't be read as a string
      */
     public func readAsString(encoding: String.Encoding = .utf8) throws -> String {
-        guard let string = try String(data: read(), encoding: encoding) else {
-            throw OperationError.readFailed
+        guard let string = String(data: try read(), encoding: encoding) else {
+            throw OperationError.readFailed(.voidData)
         }
-
+        
         return string
     }
 
@@ -507,8 +552,8 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - throws: `File.OperationError.readFailed` if the file's data couldn't be read as an int
      */
     public func readAsInt() throws -> Int {
-        guard let int = try Int(readAsString()) else {
-            throw OperationError.readFailed
+        guard let int = Int(try readAsString()) else {
+            throw OperationError.readFailed(.voidData)
         }
 
         return int
@@ -525,7 +570,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
         do {
             try data.write(to: URL(fileURLWithPath: path))
         } catch {
-            throw OperationError.writeFailed
+            throw OperationError.writeFailed(.other(error))
         }
     }
     
@@ -539,7 +584,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      */
     public func write(string: String, encoding: String.Encoding = .utf8) throws {
         guard let data = string.data(using: encoding) else {
-            throw OperationError.writeFailed
+            throw OperationError.writeFailed(.voidData)
         }
         
         try write(data: data)
@@ -571,8 +616,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
  */
 public final class Folder: FileSystem.Item, FileSystemIterable {
     /// Error type used for folder-related operations
-    public enum OperationError: Swift.Error, CustomStringConvertible {
+    public enum OperationError: Error, CustomStringConvertible {
         /// Thrown when a folder couldn't be created
+        case createFailed(Error)
+        
+        @available(*, deprecated: 1.7.0, renamed: "createFailed()")
         case creatingFolderFailed
 
         @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
@@ -581,6 +629,8 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         /// A string describing the error
         public var description: String {
             switch self {
+            case .createFailed(let error):
+                return "Failed to create folder. Error: \(String(describing: error))"
             case .creatingFolderFailed:
                 return "Failed to create folder"
             case .creatingSubfolderFailed:
@@ -713,7 +763,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         let filePath = path + fileName
         
         guard fileManager.createFile(atPath: filePath, contents: data, attributes: nil) else {
-            throw File.OperationError.writeFailed
+            throw File.OperationError.writeFailed(.unknown)
         }
         
         return try File(path: filePath, using: fileManager)
@@ -769,7 +819,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.createDirectory(atPath: subfolderPath, withIntermediateDirectories: false, attributes: nil)
             return try Folder(path: subfolderPath, using: fileManager)
         } catch {
-            throw OperationError.creatingFolderFailed
+            throw OperationError.createFailed(error)
         }
     }
 
