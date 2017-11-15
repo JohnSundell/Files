@@ -92,7 +92,7 @@ public class FileSystem {
             /// Thrown when a file or folder couldn't be copied (contains the item)
             case copyFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
-            case deleteFailed(Item)
+            case deleteFailed(Item, Error)
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
@@ -105,7 +105,7 @@ public class FileSystem {
                         return false
                     case .copyFailed(_):
                         return false
-                    case .deleteFailed(_):
+                    case .deleteFailed(_,_):
                         return false
                     }
                 case .moveFailed(let itemA):
@@ -116,7 +116,7 @@ public class FileSystem {
                         return itemA == itemB
                     case .copyFailed(_):
                         return false
-                    case .deleteFailed(_):
+                    case .deleteFailed(_,_):
                         return false
                     }
                 case .copyFailed(let itemA):
@@ -127,10 +127,10 @@ public class FileSystem {
                         return false
                     case .copyFailed(let itemB):
                         return itemA == itemB
-                    case .deleteFailed(_):
+                    case .deleteFailed(_,_):
                         return false
                     }
-                case .deleteFailed(let itemA):
+                case .deleteFailed(let itemA,_):
                     switch rhs {
                     case .renameFailed(_):
                         return false
@@ -138,7 +138,7 @@ public class FileSystem {
                         return false
                     case .copyFailed(_):
                         return false
-                    case .deleteFailed(let itemB):
+                    case .deleteFailed(let itemB,_):
                         return itemA == itemB
                     }
                 }
@@ -153,8 +153,8 @@ public class FileSystem {
                     return "Failed to move item: \(item)"
                 case .copyFailed(let item):
                     return "Failed to copy item: \(item)"
-                case .deleteFailed(let item):
-                    return "Failed to delete item: \(item)"
+                case .deleteFailed(let item, let error):
+                  return "Failed to delete item: \(item). Error: \(String(describing: error))"
                 }
             }
         }
@@ -308,7 +308,7 @@ public class FileSystem {
             do {
                 try fileManager.removeItem(atPath: path)
             } catch {
-                throw OperationError.deleteFailed(self)
+                throw OperationError.deleteFailed(self, error)
             }
         }
     }
