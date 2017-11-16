@@ -35,6 +35,7 @@ import Foundation
  *  To open other files & folders, use the `File` and `Folder` class respectively.
  */
 public class FileSystem {
+    
     fileprivate let fileManager: FileManager
 
     /**
@@ -45,8 +46,10 @@ public class FileSystem {
      *  to perform operations that are supported by both files & folders.
      */
     public class Item: Equatable, CustomStringConvertible {
+        
         /// Errror type used for invalid paths for files or folders
         public enum PathError: Error, Equatable, CustomStringConvertible {
+            
             /// Thrown when an empty path was given when initializing a file
             case empty
             /// Thrown when an item of the expected type wasn't found for a given path (contains the path)
@@ -54,21 +57,13 @@ public class FileSystem {
         
             /// Operator used to compare two instances for equality
             public static func ==(lhs: PathError, rhs: PathError) -> Bool {
-                switch lhs {
-                case .empty:
-                    switch rhs {
-                    case .empty:
-                        return true
-                    case .invalid(_):
-                        return false
-                    }
-                case .invalid(let pathA):
-                    switch rhs {
-                    case .empty:
-                        return false
-                    case .invalid(let pathB):
-                        return pathA == pathB
-                    }
+                switch (lhs, rhs) {
+                case (.empty, .empty):
+                    return true
+                case (.invalid(let pathA), .invalid(let pathB)):
+                    return pathA == pathB
+                default:
+                    return false
                 }
             }
         
@@ -84,77 +79,74 @@ public class FileSystem {
         }
         
         /// Error type used for failed operations run on files or folders
-        public enum OperationError: Error, Equatable, CustomStringConvertible {
-            /// Thrown when a file or folder couldn't be renamed (contains the item)
-            case renameFailed(Item)
-            /// Thrown when a file or folder couldn't be moved (contains the item)
-            case moveFailed(Item)
-            /// Thrown when a file or folder couldn't be copied (contains the item)
-            case copyFailed(Item)
-            /// Thrown when a file or folder couldn't be deleted (contains the item)
-            case deleteFailed(Item)
+        public enum ItemOperationError: Error, Equatable, CustomStringConvertible {
+            
+            /// Error type used for failed rename operations run on files or folders
+            public enum RenameError: Error, Equatable, CustomStringConvertible {
+                
+              /// Thrown when attempting to rename a root folder
+              case parentFolderMissing
+              /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+              case other(Error)
+              
+              public static func ==(lhs: RenameError, rhs: RenameError) -> Bool {
+                switch (lhs, rhs) {
+                case (.parentFolderMissing, .parentFolderMissing):
+                    return true
+                case (.other(let errorA as NSError), .other(let errorB as NSError)):
+                    return errorA.domain == errorB.domain && errorA.code == errorB.code
+                default:
+                    return false
+                }
+              }
+                
+              /// A string describing the error
+              public var description: String {
+                switch self {
+                case .parentFolderMissing:
+                  return "Root folder name change is forbidden."
+                case .other(let error):
+                  return String(describing: error)
+                }
+              }
+            }
+          
+            /// Thrown when a file or folder couldn't be renamed (contains the item and the underlying error)
+            case renameFailed(Item, RenameError)
+            /// Thrown when a file or folder couldn't be moved (contains the item and the underlying error)
+            case moveFailed(Item, Error)
+            /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
+            case copyFailed(Item, Error)
+            /// Thrown when a file or folder couldn't be deleted (contains the item and the underlying error)
+            case deleteFailed(Item, Error)
             
             /// Operator used to compare two instances for equality
-            public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
-                switch lhs {
-                case .renameFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(let itemB):
-                        return itemA == itemB
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .moveFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(let itemB):
-                        return itemA == itemB
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .copyFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(let itemB):
-                        return itemA == itemB
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .deleteFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(let itemB):
-                        return itemA == itemB
-                    }
+            public static func ==(lhs: ItemOperationError, rhs: ItemOperationError) -> Bool {
+                switch (lhs, rhs) {
+                case let (.deleteFailed(itemA, errorA as NSError), .deleteFailed(itemB, errorB as NSError)):
+                    return itemA == itemB && errorA.domain == errorB.domain && errorA.code == errorB.code
+                case let (.copyFailed(itemA, errorA as NSError), .copyFailed(itemB, errorB as NSError)):
+                    return itemA == itemB && errorA.domain == errorB.domain && errorA.code == errorB.code
+                case let (.moveFailed(itemA, errorA as NSError), .moveFailed(itemB, errorB as NSError)):
+                    return itemA == itemB && errorA.domain == errorB.domain && errorA.code == errorB.code
+                case let (.renameFailed(itemA, errorA), .renameFailed(itemB, errorB)):
+                    return itemA == itemB && errorA == errorB
+                default:
+                    return false
                 }
             }
 
             /// A string describing the error
             public var description: String {
                 switch self {
-                case .renameFailed(let item):
-                    return "Failed to rename item: \(item)"
-                case .moveFailed(let item):
-                    return "Failed to move item: \(item)"
-                case .copyFailed(let item):
-                    return "Failed to copy item: \(item)"
-                case .deleteFailed(let item):
-                    return "Failed to delete item: \(item)"
+                case .renameFailed(let item, let error):
+                    return "Failed to rename item: \(item). Error: \(String(describing: error))"
+                case .moveFailed(let item, let error):
+                    return "Failed to move item: \(item). Error: \(String(describing: error))"
+                case .copyFailed(let item, let error):
+                    return "Failed to copy item: \(item). Error: \(String(describing: error))"
+                case .deleteFailed(let item, let error):
+                    return "Failed to delete item: \(item). Error: \(String(describing: error))"
                 }
             }
         }
@@ -244,11 +236,11 @@ public class FileSystem {
          *  - parameter newName: The new name that the item should have
          *  - parameter keepExtension: Whether the file should keep the same extension as it had before (defaults to `true`)
          *
-         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
+         *  - throws: `ItemOperationError.renameFailed` if the item couldn't be renamed
          */
         public func rename(to newName: String, keepExtension: Bool = true) throws {
             guard let parent = parent else {
-                throw OperationError.renameFailed(self)
+                throw ItemOperationError.renameFailed(self, .parentFolderMissing)
             }
             
             var newName = newName
@@ -275,7 +267,7 @@ public class FileSystem {
                 name = newName
                 path = newPath
             } catch {
-                throw OperationError.renameFailed(self)
+                throw ItemOperationError.renameFailed(self, .other(error))
             }
         }
         
@@ -284,7 +276,7 @@ public class FileSystem {
          *
          *  - parameter newParent: The new parent folder that the item should be moved to
          *
-         *  - throws: `FileSystem.Item.OperationError.moveFailed` if the item couldn't be moved
+         *  - throws: `ItemOperationError.moveFailed` if the item couldn't be moved
          */
         public func move(to newParent: Folder) throws {
             let newPath = newParent.path + name
@@ -293,7 +285,7 @@ public class FileSystem {
                 try fileManager.moveItem(atPath: path, toPath: newPath)
                 path = newPath
             } catch {
-                throw OperationError.moveFailed(self)
+                throw ItemOperationError.moveFailed(self, error)
             }
         }
         
@@ -302,13 +294,13 @@ public class FileSystem {
          *
          *  The item will be immediately deleted. If this is a folder, all of its contents will also be deleted.
          *
-         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item coudn't be deleted
+         *  - throws: `ItemOperationError.deleteFailed` if the item coudn't be deleted
          */
         public func delete() throws {
             do {
                 try fileManager.removeItem(atPath: path)
             } catch {
-                throw OperationError.deleteFailed(self)
+                throw ItemOperationError.deleteFailed(self, error)
             }
         }
     }
@@ -343,7 +335,7 @@ public class FileSystem {
      *  - parameter path: The path at which a file should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
-     *  - throws: `File.Error.writeFailed`
+     *  - throws: `File.FileOperationError.writeFailed`
      *
      *  - returns: The file that was created
      */
@@ -351,7 +343,7 @@ public class FileSystem {
         let path = try fileManager.absolutePath(for: path)
 
         guard let parentPath = fileManager.parentPath(for: path) else {
-            throw File.Error.writeFailed
+            throw File.FileOperationError.writeFailed(.parentFolderMissing)
         }
 
         do {
@@ -359,7 +351,7 @@ public class FileSystem {
             let name = String(path[index...])
             return try createFolder(at: parentPath).createFile(named: name, contents: contents)
         } catch {
-            throw File.Error.writeFailed
+            throw File.FileOperationError.writeFailed(.other(error))
         }
     }
 
@@ -387,7 +379,7 @@ public class FileSystem {
      *  - parameter path: The path at which a folder should be created. If the path is missing intermediate
      *                    parent folders, those will be created as well.
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.FolderOperationError.createFailed`
      *
      *  - returns: The folder that was created
      */
@@ -397,7 +389,7 @@ public class FileSystem {
             try fileManager.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
             return try Folder(path: path, using: fileManager)
         } catch {
-            throw Folder.Error.creatingFolderFailed
+            throw Folder.FolderOperationError.createFailed(error)
         }
     }
 
@@ -407,7 +399,7 @@ public class FileSystem {
      *  - parameter path: The path for which a folder should either be returned or created at. If the folder
      *                    is missing, any intermediate parent folders will also be created.
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.FolderOperationError.createFailed`
      */
     @discardableResult public func createFolderIfNeeded(at path: String) throws -> Folder {
         if let existingFolder = try? Folder(path: path, using: fileManager) {
@@ -424,20 +416,105 @@ public class FileSystem {
  *  You initialize this class with a path, or by asking a folder to return a file for a given name
  */
 public final class File: FileSystem.Item, FileSystemIterable {
-    /// Error type specific to file-related operations
-    public enum Error: Swift.Error, CustomStringConvertible {
-        /// Thrown when a file couldn't be written to
-        case writeFailed
-        /// Thrown when a file couldn't be read, either because it was malformed or because it has been deleted
-        case readFailed
+    
+    /// Error type used for file-related operations
+    public enum FileOperationError: Error, Equatable, CustomStringConvertible {
+        
+        /// Error type used for failed write operations run on files
+        public enum WriteError: Error, Equatable, CustomStringConvertible {
+            
+            /// Thrown when attempting to write at root.
+            case parentFolderMissing
+            /// Throw when data is malformed or empty.
+            case voidData
+            /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+            case other(Error)
+            /// Thrown when the error is unforseen.
+            case unknown
+            
+            public static func ==(lhs: WriteError, rhs: WriteError) -> Bool {
+                switch (lhs, rhs) {
+                case (.parentFolderMissing, .parentFolderMissing):
+                    return true
+                case (.voidData, .voidData):
+                    return true
+                case (.unknown, .unknown):
+                    return true
+                case (.other(let a as NSError), .other(let b as NSError)):
+                    return a.domain == b.domain && a.code == b.code
+                default:
+                    return false
+                }
+            }
+            
+            /// A string describing the error
+            public var description: String {
+                switch self {
+                case .parentFolderMissing:
+                    return "Writting at root path is forbidden."
+                case .voidData:
+                    return "Invalid data."
+                case .other(let error):
+                    return String(describing: error)
+                case .unknown:
+                    return "Unknown error."
+                }
+            }
+        }
+        
+        /// Error type used for failed read operations run on files
+        public enum ReadError: Error, Equatable, CustomStringConvertible {
+            
+            /// Throw when data is malformed or empty.
+            case voidData
+            /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
+            case other(Error)
+            
+            public static func ==(lhs: ReadError, rhs: ReadError) -> Bool {
+                switch (lhs, rhs) {
+                case (.voidData, .voidData):
+                    return true
+                case (.other(let a as NSError), .other(let b as NSError)):
+                    return a.domain == b.domain && a.code == b.code
+                default:
+                    return false
+                }
+            }
+            
+            /// A string describing the error
+            public var description: String {
+                switch self {
+                case .voidData:
+                    return "Invalid data."
+                case .other(let error):
+                    return String(describing: error)
+                }
+            }
+        }
+      
+        /// Thrown when a file couldn't be written to (contains underlying error)
+        case writeFailed(WriteError)
+        /// Thrown when a file couldn't be read (contains underlying error)
+        case readFailed(ReadError)
+        
+        public static func ==(lhs: FileOperationError, rhs: FileOperationError) -> Bool {
+            switch (lhs, rhs) {
+            case (.writeFailed(let a), .writeFailed(let b)):
+                return a == b
+            case (.readFailed(let a), .readFailed(let b)):
+                return a == b
+            default:
+                return false
+            }
+        }
 
         /// A string describing the error
         public var description: String {
             switch self {
-            case .writeFailed:
-                return "Failed to write to file"
-            case .readFailed:
-                return "Failed to read file"
+            case .writeFailed(let error):
+              return "Failed to write to file. Error: \(String(describing: error))."
+            case .readFailed(let error):
+              return "Failed to read file. Error: \(String(describing: error))."
             }
         }
     }
@@ -448,7 +525,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - parameter path: The path of the file to create a representation of
      *  - parameter fileManager: Optionally give a custom file manager to use to look up the file
      *
-     *  - throws: `FileSystemItem.Error` in case an empty path was given, or if the path given doesn't
+     *  - throws: `File.PathError` in case an empty path was given, or if the path given doesn't
      *    point to a readable file.
      */
     public init(path: String, using fileManager: FileManager = .default) throws {
@@ -458,37 +535,37 @@ public final class File: FileSystem.Item, FileSystemIterable {
     /**
      *  Read the data contained within this file
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read
+     *  - throws: `File.FileOperationError.readFailed` if the file's data couldn't be read
      */
     public func read() throws -> Data {
         do {
             return try Data(contentsOf: URL(fileURLWithPath: path))
         } catch {
-            throw Error.readFailed
+            throw FileOperationError.readFailed(.other(error))
         }
     }
 
     /**
      *  Read the data contained within this file, and convert it to a string
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as a string
+     *  - throws: `File.FileOperationError.readFailed` if the file's data couldn't be read as a string
      */
     public func readAsString(encoding: String.Encoding = .utf8) throws -> String {
-        guard let string = try String(data: read(), encoding: encoding) else {
-            throw Error.readFailed
+        guard let string = String(data: try read(), encoding: encoding) else {
+            throw FileOperationError.readFailed(.voidData)
         }
-
+        
         return string
     }
 
     /**
      *  Read the data contained within this file, and convert it to an int
      *
-     *  - throws: `File.Error.readFailed` if the file's data couldn't be read as an int
+     *  - throws: `File.FileOperationError.readFailed` if the file's data couldn't be read as an int
      */
     public func readAsInt() throws -> Int {
-        guard let int = try Int(readAsString()) else {
-            throw Error.readFailed
+        guard let int = Int(try readAsString()) else {
+            throw FileOperationError.readFailed(.voidData)
         }
 
         return int
@@ -499,13 +576,13 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter data: The data to write to the file
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be written to
+     *  - throws: `File.FileOperationError.writeFailed` if the file couldn't be written to
      */
     public func write(data: Data) throws {
         do {
             try data.write(to: URL(fileURLWithPath: path))
         } catch {
-            throw Error.writeFailed
+            throw FileOperationError.writeFailed(.other(error))
         }
     }
     
@@ -515,11 +592,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - parameter string: The string to write to the file
      *  - parameter encoding: Optionally give which encoding that the string should be encoded in (defaults to UTF-8)
      *
-     *  - throws: `File.Error.writeFailed` if the string couldn't be encoded, or written to the file
+     *  - throws: `File.FileOperationError.writeFailed` if the string couldn't be encoded, or written to the file
      */
     public func write(string: String, encoding: String.Encoding = .utf8) throws {
         guard let data = string.data(using: encoding) else {
-            throw Error.writeFailed
+            throw FileOperationError.writeFailed(.voidData)
         }
         
         try write(data: data)
@@ -530,7 +607,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folder: The folder that the file should be copy to
      *
-     *  - throws: `FileSystem.Item.OperationError.copyFailed` if the file couldn't be copied
+     *  - throws: `ItemOperationError.copyFailed` if the file couldn't be copied
      */
     @discardableResult public func copy(to folder: Folder) throws -> File {
         let newPath = folder.path + name
@@ -539,7 +616,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
             try fileManager.copyItem(atPath: path, toPath: newPath)
             return try File(path: newPath)
         } catch {
-            throw OperationError.copyFailed(self)
+            throw ItemOperationError.copyFailed(self, error)
         }
     }
 }
@@ -550,21 +627,31 @@ public final class File: FileSystem.Item, FileSystemIterable {
  *  You initialize this class with a path, or by asking a folder to return a subfolder for a given name
  */
 public final class Folder: FileSystem.Item, FileSystemIterable {
-    /// Error type specific to folder-related operations
-    public enum Error: Swift.Error, CustomStringConvertible {
+    
+    /// Error type used for folder-related operations
+    public enum FolderOperationError: Error, Equatable, CustomStringConvertible {
+        
         /// Thrown when a folder couldn't be created
-        case creatingFolderFailed
-
-        @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
-        case creatingSubfolderFailed
+        case createFailed(Error)
+        
+        public static func ==(lhs: FolderOperationError, rhs: FolderOperationError) -> Bool {
+            switch (lhs, rhs) {
+            case (.createFailed(let a as FolderOperationError), .createFailed(let b as FolderOperationError)):
+                return a == b
+            case (.createFailed(let a as ItemOperationError), .createFailed(let b as ItemOperationError)):
+                return a == b
+            case (.createFailed(let a as NSError), .createFailed(let b as NSError)):
+                return a.domain == b.domain && a.code == b.code
+            default:
+                return false
+            }
+        }
 
         /// A string describing the error
         public var description: String {
             switch self {
-            case .creatingFolderFailed:
-                return "Failed to create folder"
-            case .creatingSubfolderFailed:
-                return "Failed to create subfolder"
+            case .createFailed(let error):
+                return "Failed to create folder. Error: \(String(describing: error))"
             }
         }
     }
@@ -600,7 +687,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter path: The path of the folder to create a representation of
      *  - parameter fileManager: Optionally give a custom file manager to use to look up the folder
      *
-     *  - throws: `FileSystemItem.Error` in case an empty path was given, or if the path given doesn't
+     *  - throws: `Folder.PathError` in case an empty path was given, or if the path given doesn't
      *    point to a readable folder.
      */
     public init(path: String, using fileManager: FileManager = .default) throws {
@@ -622,7 +709,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter fileName: The name of the file to return
      *
-     *  - throws: `File.PathError.invalid` if the file couldn't be found
+     *  - throws: `Folder.PathError.invalid` if the file couldn't be found
      */
     public func file(named fileName: String) throws -> File {
         return try File(path: path + fileName, using: fileManager)
@@ -633,7 +720,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter filePath: The subpath of the file to return. Relative to this folder.
      *
-     *  - throws: `File.PathError.invalid` if the file couldn't be found
+     *  - throws: `Folder.PathError.invalid` if the file couldn't be found
      */
     public func file(atPath filePath: String) throws -> File {
         return try File(path: path + filePath, using: fileManager)
@@ -685,7 +772,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter fileName: The name of the file to create
      *  - parameter data: Optionally give any data that the file should contain
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     *  - throws: `File.FileOperationError.writeFailed` if the file couldn't be created
      *
      *  - returns: The file that was created
      */
@@ -693,7 +780,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         let filePath = path + fileName
         
         guard fileManager.createFile(atPath: filePath, contents: data, attributes: nil) else {
-            throw File.Error.writeFailed
+            throw File.FileOperationError.writeFailed(.unknown)
         }
         
         return try File(path: filePath, using: fileManager)
@@ -723,7 +810,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter dataExpression: An expression resulting in any data that a new file should contain.
      *                              Will only be evaluated & used in case a new file is created.
      *
-     *  - throws: `File.Error.writeFailed` if the file couldn't be created
+     *  - throws: `File.FileOperationError.writeFailed` if the file couldn't be created
      */
     @discardableResult public func createFileIfNeeded(withName fileName: String, contents dataExpression: @autoclosure () -> Data = .init()) throws -> File {
         if let existingFile = try? file(named: fileName) {
@@ -738,7 +825,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to create
      *
-     *  - throws: `Folder.Error.creatingFolderFailed` if the subfolder couldn't be created
+     *  - throws: `Folder.FolderOperationError.createFailed` if the subfolder couldn't be created
      *
      *  - returns: The folder that was created
      */
@@ -749,7 +836,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.createDirectory(atPath: subfolderPath, withIntermediateDirectories: false, attributes: nil)
             return try Folder(path: subfolderPath, using: fileManager)
         } catch {
-            throw Error.creatingFolderFailed
+            throw FolderOperationError.createFailed(error)
         }
     }
 
@@ -758,7 +845,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folderName: The name of the folder to either get or create
      *
-     *  - throws: `Folder.Error.creatingFolderFailed`
+     *  - throws: `Folder.FolderOperationError.createFailed`
      */
     @discardableResult public func createSubfolderIfNeeded(withName folderName: String) throws -> Folder {
         if let existingFolder = try? subfolder(named: folderName) {
@@ -797,6 +884,8 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter newParent: The new parent folder that the contents of this folder should be moved to
      *  - parameter includeHidden: Whether hidden (dot) files should be moved (default: false)
+     *
+     * - throws: `Folder.FolderOperationError.moveFailed`
      */
     public func moveContents(to newParent: Folder, includeHidden: Bool = false) throws {
         try makeFileSequence(includeHidden: includeHidden).forEach { try $0.move(to: newParent) }
@@ -809,6 +898,8 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter includeHidden: Whether hidden files (dot) files contained within the folder should also be removed
      *
      *  This will still keep the folder itself on disk. If you wish to delete the folder as well, call `delete()` on it.
+     *
+     * - throws: `Folder.FolderOperationError.deleteFailed`
      */
     public func empty(includeHidden: Bool = false) throws {
         try makeFileSequence(includeHidden: includeHidden).forEach { try $0.delete() }
@@ -820,7 +911,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *
      *  - parameter folder: The folder that the folder should be copy to
      *
-     *  - throws: `FileSystem.Item.OperationError.copyFailed` if the folder couldn't be copied
+     *  - throws: `ItemOperationError.copyFailed` if the folder couldn't be copied
      */
     @discardableResult public func copy(to folder: Folder) throws -> Folder {
         let newPath = folder.path + name
@@ -829,7 +920,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
             try fileManager.copyItem(atPath: path, toPath: newPath)
             return try Folder(path: newPath)
         } catch {
-            throw OperationError.copyFailed(self)
+            throw ItemOperationError.copyFailed(self, error)
         }
     }
 }
