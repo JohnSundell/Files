@@ -35,6 +35,7 @@ import Foundation
  *  To open other files & folders, use the `File` and `Folder` class respectively.
  */
 public class FileSystem {
+    
     fileprivate let fileManager: FileManager
 
     /**
@@ -45,8 +46,10 @@ public class FileSystem {
      *  to perform operations that are supported by both files & folders.
      */
     public class Item: Equatable, CustomStringConvertible {
+        
         /// Errror type used for invalid paths for files or folders
         public enum PathError: Error, Equatable, CustomStringConvertible {
+            
             /// Thrown when an empty path was given when initializing a file
             case empty
             /// Thrown when an item of the expected type wasn't found for a given path (contains the path)
@@ -85,12 +88,14 @@ public class FileSystem {
         
         /// Error type used for failed operations run on files or folders
         public enum ItemOperationError: Error, Equatable, CustomStringConvertible {
+            
             /// Error type used for failed rename operations run on files or folders
             public enum RenameError: Error, Equatable, CustomStringConvertible {
+                
               /// Thrown when attempting to rename a root folder
               case parentFolderMissing
               /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
-              case other(Error)
+              case other(Error?)
               
               public static func ==(lhs: RenameError, rhs: RenameError) -> Bool {
                 switch lhs {
@@ -464,14 +469,16 @@ public final class File: FileSystem.Item, FileSystemIterable {
     
     /// Error type used for file-related operations
     public enum FileOperationError: Error, Equatable, CustomStringConvertible {
+        
         /// Error type used for failed write operations run on files
         public enum WriteError: Error, Equatable, CustomStringConvertible {
+            
             /// Thrown when attempting to write at root.
             case parentFolderMissing
             /// Throw when data is malformed or empty.
             case voidData
             /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
-            case other(Error)
+            case other(Error?)
             /// Thrown when the error is unforseen.
             case unknown
             
@@ -541,10 +548,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
         
         /// Error type used for failed read operations run on files
         public enum ReadError: Error, Equatable, CustomStringConvertible {
+            
             /// Throw when data is malformed or empty.
             case voidData
             /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
-            case other(Error)
+            case other(Error?)
             
             public static func ==(lhs: ReadError, rhs: ReadError) -> Bool {
                 switch lhs {
@@ -722,6 +730,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     
     /// Error type used for folder-related operations
     public enum FolderOperationError: Error, Equatable, CustomStringConvertible {
+        
         /// Thrown when a folder couldn't be created
         case createFailed(Error)
         
