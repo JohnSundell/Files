@@ -64,7 +64,7 @@ class FilesTests: XCTestCase {
             try file.delete()
             
             // Attempting to read the file should now throw an error
-            try assert(file.read(), throwsError: File.FileOperationError.readFailed(.other(nil)))
+            try assert(file.read(), throwsError: File.FileOperationError.readFailed(.other(NSError(domain: NSCocoaErrorDomain, code: 260, userInfo: nil))))
         
             // Attempting to create a File instance with the path should now also fail
             try assert(File(path: file.path), throwsError: File.PathError.invalid(file.path))
@@ -95,7 +95,7 @@ class FilesTests: XCTestCase {
             try assert(Folder(path: subfolder.path), throwsError: Folder.PathError.invalid(subfolder.path))
             
             // The file contained in the folder should now also be deleted
-            try assert(file.read(), throwsError: File.FileOperationError.readFailed(.other(nil)))
+            try assert(file.read(), throwsError: File.FileOperationError.readFailed(.other(NSError(domain: NSCocoaErrorDomain, code: 260, userInfo: nil))))
         }
     }
 
@@ -438,14 +438,7 @@ class FilesTests: XCTestCase {
         performTest {
             let file = try folder.createFile(named: "file")
             try file.delete()
-            do {
-                try file.delete()
-                XCTFail("Expected error to be thrown")
-            } catch let error as FileSystem.Item.ItemOperationError {
-                XCTAssertEqual(error, FileSystem.Item.ItemOperationError.deleteFailed(file, error))
-            } catch {
-                XCTFail("Unexpected error type: \(type(of: error))")
-            }
+            try assert(file.delete(), throwsError: FileSystem.Item.ItemOperationError.deleteFailed(file, NSError(domain: NSCocoaErrorDomain, code: 4, userInfo: nil)))
         }
     }
     
