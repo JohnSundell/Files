@@ -468,7 +468,7 @@ public final class File: FileSystem.Item, FileSystemIterable {
             /// Throw when data is malformed or empty.
             case voidData
             /// Thrown when the error applies to none of the other cases, in this scope (contains the underlying error).
-            case other(Error?)
+            case other(Error)
             
             public static func ==(lhs: ReadError, rhs: ReadError) -> Bool {
                 switch (lhs, rhs) {
