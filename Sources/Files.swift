@@ -632,7 +632,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public enum FolderOperationError: Error, Equatable, CustomStringConvertible {
         
         /// Thrown when a folder couldn't be created
-        case createFailed(Error?)
+        case createFailed(Error)
         
         public static func ==(lhs: FolderOperationError, rhs: FolderOperationError) -> Bool {
             switch (lhs, rhs) {
