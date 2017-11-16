@@ -57,21 +57,13 @@ public class FileSystem {
         
             /// Operator used to compare two instances for equality
             public static func ==(lhs: PathError, rhs: PathError) -> Bool {
-                switch lhs {
-                case .empty:
-                    switch rhs {
-                    case .empty:
-                        return true
-                    case .invalid(_):
-                        return false
-                    }
-                case .invalid(let pathA):
-                    switch rhs {
-                    case .empty:
-                        return false
-                    case .invalid(let pathB):
-                        return pathA == pathB
-                    }
+                switch (lhs, rhs) {
+                case (.empty, .empty):
+                    return true
+                case (.invalid(let pathA), .invalid(let pathB)):
+                    return pathA == pathB
+                default:
+                    return false
                 }
             }
         
@@ -98,21 +90,13 @@ public class FileSystem {
               case other(Error?)
               
               public static func ==(lhs: RenameError, rhs: RenameError) -> Bool {
-                switch lhs {
-                case .parentFolderMissing:
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return true
-                    case .other(_):
-                        return false
-                    }
-                case .other(_):
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return false
-                    case .other(_):
-                        return true
-                    }
+                switch (lhs, rhs) {
+                case (.parentFolderMissing, .parentFolderMissing):
+                    return true
+                case (.other(let errorA as NSError?), .other(let errorB as NSError?)):
+                    return errorA?.domain == errorB?.domain && errorA?.code == errorB?.code
+                default:
+                    return false
                 }
               }
                 
@@ -134,55 +118,21 @@ public class FileSystem {
             /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
             case copyFailed(Item, Error)
             /// Thrown when a file or folder couldn't be deleted (contains the item and the underlying error)
-            case deleteFailed(Item, Error)
+            case deleteFailed(Item, Error?)
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: ItemOperationError, rhs: ItemOperationError) -> Bool {
-                switch lhs {
-                case .deleteFailed(let itemA,_):
-                    switch rhs {
-                    case .renameFailed(_,_):
-                        return false
-                    case .moveFailed(_,_):
-                        return false
-                    case .copyFailed(_,_):
-                        return false
-                    case .deleteFailed(let itemB,_):
-                        return itemA == itemB
-                    }
-                case .copyFailed(let itemA,_):
-                    switch rhs {
-                    case .renameFailed(_,_):
-                        return false
-                    case .moveFailed(_,_):
-                        return false
-                    case .copyFailed(let itemB,_):
-                        return itemA == itemB
-                    case .deleteFailed(_,_):
-                        return false
-                    }
-                case .moveFailed(let itemA,_):
-                    switch rhs {
-                    case .renameFailed(_,_):
-                        return false
-                    case .moveFailed(let itemB,_):
-                        return itemA == itemB
-                    case .copyFailed(_,_):
-                        return false
-                    case .deleteFailed(_,_):
-                        return false
-                    }
-                case .renameFailed(let itemA,_):
-                    switch rhs {
-                    case .renameFailed(let itemB,_):
-                        return itemA == itemB
-                    case .moveFailed(_,_):
-                        return false
-                    case .copyFailed(_,_):
-                        return false
-                    case .deleteFailed(_,_):
-                        return false
-                    }
+                switch (lhs, rhs) {
+                case let (.deleteFailed(itemA, errorA as NSError?), .deleteFailed(itemB, errorB as NSError?)):
+                    return itemA == itemB && errorA?.domain == errorB?.domain && errorA?.code == errorB?.code
+                case let (.copyFailed(itemA, errorA as NSError?), .copyFailed(itemB, errorB as NSError?)):
+                    return itemA == itemB && errorA?.domain == errorB?.domain && errorA?.code == errorB?.code
+                case let (.moveFailed(itemA, errorA as NSError?), .moveFailed(itemB, errorB as NSError?)):
+                    return itemA == itemB && errorA?.domain == errorB?.domain && errorA?.code == errorB?.code
+                case let (.renameFailed(itemA, errorA), .renameFailed(itemB, errorB)):
+                    return itemA == itemB && errorA == errorB
+                default:
+                    return false
                 }
             }
 
@@ -483,51 +433,17 @@ public final class File: FileSystem.Item, FileSystemIterable {
             case unknown
             
             public static func ==(lhs: WriteError, rhs: WriteError) -> Bool {
-                switch lhs {
-                case .parentFolderMissing:
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return true
-                    case .voidData:
-                        return false
-                    case .other(_):
-                        return false
-                    case .unknown:
-                        return false
-                    }
-                case .voidData:
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return false
-                    case .voidData:
-                        return true
-                    case .other(_):
-                        return false
-                    case .unknown:
-                        return false
-                    }
-                case .other(_):
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return false
-                    case .voidData:
-                        return false
-                    case .other(_):
-                        return true
-                    case .unknown:
-                        return false
-                    }
-                case .unknown:
-                    switch rhs {
-                    case .parentFolderMissing:
-                        return false
-                    case .voidData:
-                        return false
-                    case .other(_):
-                        return false
-                    case .unknown:
-                        return true
-                    }
+                switch (lhs, rhs) {
+                case (.parentFolderMissing, .parentFolderMissing):
+                    return true
+                case (.voidData, .voidData):
+                    return true
+                case (.unknown, .unknown):
+                    return true
+                case (.other(let a as NSError?), .other(let b as NSError?)):
+                    return a?.domain == b?.domain && a?.code == b?.code
+                default:
+                    return false
                 }
             }
             
@@ -555,21 +471,13 @@ public final class File: FileSystem.Item, FileSystemIterable {
             case other(Error?)
             
             public static func ==(lhs: ReadError, rhs: ReadError) -> Bool {
-                switch lhs {
-                case .voidData:
-                    switch rhs {
-                    case .voidData:
-                        return true
-                    case .other(_):
-                        return false
-                    }
-                case .other(_):
-                    switch rhs {
-                    case .voidData:
-                        return false
-                    case .other(_):
-                        return true
-                    }
+                switch (lhs, rhs) {
+                case (.voidData, .voidData):
+                    return true
+                case (.other(let a as NSError?), .other(let b as NSError?)):
+                    return a?.domain == b?.domain && a?.code == b?.code
+                default:
+                    return false
                 }
             }
             
@@ -590,21 +498,13 @@ public final class File: FileSystem.Item, FileSystemIterable {
         case readFailed(ReadError)
         
         public static func ==(lhs: FileOperationError, rhs: FileOperationError) -> Bool {
-            switch lhs {
-            case .writeFailed(let errorA):
-                switch rhs {
-                case .writeFailed(let errorB):
-                    return errorA == errorB
-                case .readFailed(_):
-                    return false
-                }
-            case .readFailed(let errorA):
-                switch rhs {
-                case .writeFailed(_):
-                    return false
-                case .readFailed(let errorB):
-                    return errorA == errorB
-                }
+            switch (lhs, rhs) {
+            case (.writeFailed(let a), .writeFailed(let b)):
+                return a == b
+            case (.readFailed(let a), .readFailed(let b)):
+                return a == b
+            default:
+                return false
             }
         }
 
@@ -735,12 +635,15 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         case createFailed(Error)
         
         public static func ==(lhs: FolderOperationError, rhs: FolderOperationError) -> Bool {
-            switch lhs {
-            case .createFailed(let errorA as NSError):
-                switch rhs {
-                case .createFailed(let errorB as NSError):
-                    return errorA.domain == errorB.domain && errorA.code == errorB.code
-                }
+            switch (lhs, rhs) {
+            case (.createFailed(let a as FolderOperationError), .createFailed(let b as FolderOperationError)):
+                return a == b
+            case (.createFailed(let a as ItemOperationError), .createFailed(let b as ItemOperationError)):
+                return a == b
+            case (.createFailed(let a as NSError?), .createFailed(let b as NSError?)):
+                return a?.domain == b?.domain && a?.code == b?.code
+            default:
+                return false
             }
         }
 
