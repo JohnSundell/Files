@@ -114,9 +114,9 @@ public class FileSystem {
             /// Thrown when a file or folder couldn't be renamed (contains the item and the underlying error)
             case renameFailed(Item, RenameError)
             /// Thrown when a file or folder couldn't be moved (contains the item and the underlying error)
-            case moveFailed(Item, Error)
+            case moveFailed(Item, Error?)
             /// Thrown when a file or folder couldn't be copied (contains the item and the underlying error)
-            case copyFailed(Item, Error)
+            case copyFailed(Item, Error?)
             /// Thrown when a file or folder couldn't be deleted (contains the item and the underlying error)
             case deleteFailed(Item, Error?)
             
@@ -632,7 +632,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public enum FolderOperationError: Error, Equatable, CustomStringConvertible {
         
         /// Thrown when a folder couldn't be created
-        case createFailed(Error)
+        case createFailed(Error?)
         
         public static func ==(lhs: FolderOperationError, rhs: FolderOperationError) -> Bool {
             switch (lhs, rhs) {
