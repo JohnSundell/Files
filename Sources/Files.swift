@@ -358,7 +358,7 @@ public class FileSystem {
          *
          *  The item will be immediately deleted. If this is a folder, all of its contents will also be deleted.
          *
-         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item coudn't be deleted
+         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item couldn't be deleted
          */
         public func delete() throws {
             do {
