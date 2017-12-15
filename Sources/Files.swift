@@ -54,21 +54,15 @@ public class FileSystem {
         
             /// Operator used to compare two instances for equality
             public static func ==(lhs: PathError, rhs: PathError) -> Bool {
-                switch lhs {
-                case .empty:
-                    switch rhs {
-                    case .empty:
-                        return true
-                    case .invalid(_):
-                        return false
-                    }
-                case .invalid(let pathA):
-                    switch rhs {
-                    case .empty:
-                        return false
-                    case .invalid(let pathB):
-                        return pathA == pathB
-                    }
+                switch (lhs, rhs) {
+                case (.empty, .empty):
+                    return true
+                case (.empty, _):
+                    return false
+                case (.invalid(let lhsPath), .invalid(let rhsPath)):
+                    return lhsPath == rhsPath
+                case (.invalid, _):
+                    return false
                 }
             }
         
@@ -98,72 +92,27 @@ public class FileSystem {
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
-                switch lhs {
-                case .renameFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(let itemB):
-                        return itemA == itemB
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    case .setPermissionsFailed(_):
-                        return false
-                    }
-                case .moveFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(let itemB):
-                        return itemA == itemB
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    case .setPermissionsFailed(_):
-                        return false
-                    }
-                case .copyFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(let itemB):
-                        return itemA == itemB
-                    case .deleteFailed(_):
-                        return false
-                    case .setPermissionsFailed(_):
-                        return false
-                    }
-                case .deleteFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(let itemB):
-                        return itemA == itemB
-                    case .setPermissionsFailed(_):
-                        return false
-                    }
-                case .setPermissionsFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    case .setPermissionsFailed(let itemB):
-                        return itemA == itemB
-                    }
+                switch (lhs, rhs) {
+                case (.renameFailed(let lhsItem), .renameFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.renameFailed, _):
+                    return false
+                case (.moveFailed(let lhsItem), .moveFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.moveFailed, _):
+                    return false
+                case (.copyFailed(let lhsItem), .copyFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.copyFailed, _):
+                    return false
+                case (.deleteFailed(let lhsItem), .deleteFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.deleteFailed, _):
+                    return false
+                case (.setPermissionsFailed(let lhsItem), .setPermissionsFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.setPermissionsFailed, _):
+                    return false
                 }
             }
 
