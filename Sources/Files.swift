@@ -377,7 +377,7 @@ public class FileSystem {
          *
          *  - throws: `FileSystem.Item.OperationError.setPermissionsFailed` if the permissions of the item couldn't be set
          */
-        func setPermissions(forOwner owner: Permission, group: Permission = [], others: Permission = []) throws {
+        public func setPermissions(forOwner owner: Permission, group: Permission = [], others: Permission = []) throws {
             do {
                 let octal = Permission.octalRepresentation(of: [owner, group, others])
                 try fileManager.setAttributes([.posixPermissions: octal], ofItemAtPath: path)
