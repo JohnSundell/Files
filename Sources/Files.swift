@@ -54,21 +54,15 @@ public class FileSystem {
         
             /// Operator used to compare two instances for equality
             public static func ==(lhs: PathError, rhs: PathError) -> Bool {
-                switch lhs {
-                case .empty:
-                    switch rhs {
-                    case .empty:
-                        return true
-                    case .invalid(_):
-                        return false
-                    }
-                case .invalid(let pathA):
-                    switch rhs {
-                    case .empty:
-                        return false
-                    case .invalid(let pathB):
-                        return pathA == pathB
-                    }
+                switch (lhs, rhs) {
+                case (.empty, .empty):
+                    return true
+                case (.empty, _):
+                    return false
+                case (.invalid(let lhsPath), .invalid(let rhsPath)):
+                    return lhsPath == rhsPath
+                case (.invalid, _):
+                    return false
                 }
             }
         
@@ -93,54 +87,32 @@ public class FileSystem {
             case copyFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
+            /// Thrown when a file or folder's permissions couldn't be set (contains the item)
+            case setPermissionsFailed(Item)
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
-                switch lhs {
-                case .renameFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(let itemB):
-                        return itemA == itemB
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .moveFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(let itemB):
-                        return itemA == itemB
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .copyFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(let itemB):
-                        return itemA == itemB
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .deleteFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(let itemB):
-                        return itemA == itemB
-                    }
+                switch (lhs, rhs) {
+                case (.renameFailed(let lhsItem), .renameFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.renameFailed, _):
+                    return false
+                case (.moveFailed(let lhsItem), .moveFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.moveFailed, _):
+                    return false
+                case (.copyFailed(let lhsItem), .copyFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.copyFailed, _):
+                    return false
+                case (.deleteFailed(let lhsItem), .deleteFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.deleteFailed, _):
+                    return false
+                case (.setPermissionsFailed(let lhsItem), .setPermissionsFailed(let rhsItem)):
+                    return lhsItem == rhsItem
+                case (.setPermissionsFailed, _):
+                    return false
                 }
             }
 
@@ -155,7 +127,40 @@ public class FileSystem {
                     return "Failed to copy item: \(item)"
                 case .deleteFailed(let item):
                     return "Failed to delete item: \(item)"
+                case .setPermissionsFailed(let item):
+                    return "Failed to set permissions on item: \(item)"
                 }
+            }
+        }
+
+        /// POSIX file permissions
+        public struct Permission: OptionSet {
+            public var rawValue: Int
+
+            /// Grants the permission to execute a file
+            public static let execute = Permission(rawValue: 1)
+            /// Grants the permission to modify a file
+            public static let write = Permission(rawValue: 2)
+            /// Grants the permission to read a file
+            public static let read = Permission(rawValue: 4)
+
+            public init(rawValue: Int) {
+                self.rawValue = rawValue
+            }
+
+            var binaryRepresentation: String {
+                var b = String(rawValue, radix: 2)
+                while b.count < 3 { b = "0" + b }
+                return b
+            }
+
+            static func binaryRepresentation(of permissions: [Permission]) -> String {
+                return permissions.map { $0.binaryRepresentation }.joined()
+            }
+
+            static func octalRepresentation(of permissions: [Permission]) -> Int {
+                let binary = binaryRepresentation(of: permissions)
+                return Int(binary, radix: 2)!
             }
         }
         
@@ -302,13 +307,31 @@ public class FileSystem {
          *
          *  The item will be immediately deleted. If this is a folder, all of its contents will also be deleted.
          *
-         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item coudn't be deleted
+         *  - throws: `FileSystem.Item.OperationError.deleteFailed` if the item couldn't be deleted
          */
         public func delete() throws {
             do {
                 try fileManager.removeItem(atPath: path)
             } catch {
                 throw OperationError.deleteFailed(self)
+            }
+        }
+
+        /**
+         *  Sets the permissions attributes of the item
+         *
+         *  - parameter owner: The permissions for the owner class
+         *  - parameter group: The permissions for the group class
+         *  - parameter others: The permissions for the others class
+         *
+         *  - throws: `FileSystem.Item.OperationError.setPermissionsFailed` if the permissions of the item couldn't be set
+         */
+        public func setPermissions(forOwner owner: Permission, group: Permission = [], others: Permission = []) throws {
+            do {
+                let octal = Permission.octalRepresentation(of: [owner, group, others])
+                try fileManager.setAttributes([.posixPermissions: octal], ofItemAtPath: path)
+            } catch {
+                throw OperationError.setPermissionsFailed(self)
             }
         }
     }
