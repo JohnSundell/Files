@@ -93,6 +93,8 @@ public class FileSystem {
             case copyFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
+            /// Thrown when a file or folder's permissions couldn't be set (contains the item)
+            case setPermissionsFailed(Item)
             
             /// Operator used to compare two instances for equality
             public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
@@ -107,6 +109,8 @@ public class FileSystem {
                         return false
                     case .deleteFailed(_):
                         return false
+                    case .setPermissionsFailed(_):
+                        return false
                     }
                 case .moveFailed(let itemA):
                     switch rhs {
@@ -117,6 +121,8 @@ public class FileSystem {
                     case .copyFailed(_):
                         return false
                     case .deleteFailed(_):
+                        return false
+                    case .setPermissionsFailed(_):
                         return false
                     }
                 case .copyFailed(let itemA):
@@ -129,6 +135,8 @@ public class FileSystem {
                         return itemA == itemB
                     case .deleteFailed(_):
                         return false
+                    case .setPermissionsFailed(_):
+                        return false
                     }
                 case .deleteFailed(let itemA):
                     switch rhs {
@@ -139,6 +147,21 @@ public class FileSystem {
                     case .copyFailed(_):
                         return false
                     case .deleteFailed(let itemB):
+                        return itemA == itemB
+                    case .setPermissionsFailed(_):
+                        return false
+                    }
+                case .setPermissionsFailed(let itemA):
+                    switch rhs {
+                    case .renameFailed(_):
+                        return false
+                    case .moveFailed(_):
+                        return false
+                    case .copyFailed(_):
+                        return false
+                    case .deleteFailed(_):
+                        return false
+                    case .setPermissionsFailed(let itemB):
                         return itemA == itemB
                     }
                 }
@@ -155,6 +178,8 @@ public class FileSystem {
                     return "Failed to copy item: \(item)"
                 case .deleteFailed(let item):
                     return "Failed to delete item: \(item)"
+                case .setPermissionsFailed(let item):
+                    return "Failed to set permissions on item: \(item)"
                 }
             }
         }
