@@ -183,6 +183,37 @@ public class FileSystem {
                 }
             }
         }
+
+        /// POSIX file permissions
+        public struct Permission: OptionSet {
+            public var rawValue: Int
+
+            /// Grants the permission to execute a file
+            public static let execute = Permission(rawValue: 1)
+            /// Grants the permission to modify a file
+            public static let write = Permission(rawValue: 2)
+            /// Grants the permission to read a file
+            public static let read = Permission(rawValue: 4)
+
+            public init(rawValue: Int) {
+                self.rawValue = rawValue
+            }
+
+            var binaryRepresentation: String {
+                var b = String(rawValue, radix: 2)
+                while b.count < 3 { b = "0" + b }
+                return b
+            }
+
+            static func binaryRepresentation(of permissions: [Permission]) -> String {
+                return permissions.map { $0.binaryRepresentation }.joined()
+            }
+
+            static func octalRepresentation(of permissions: [Permission]) -> Int {
+                let binary = binaryRepresentation(of: permissions)
+                return Int(binary, radix: 2)!
+            }
+        }
         
         /// Operator used to compare two instances for equality
         public static func ==(lhs: Item, rhs: Item) -> Bool {
@@ -334,6 +365,24 @@ public class FileSystem {
                 try fileManager.removeItem(atPath: path)
             } catch {
                 throw OperationError.deleteFailed(self)
+            }
+        }
+
+        /**
+         *  Sets the permissions attributes of the item
+         *
+         *  - parameter owner: The permissions for the owner class
+         *  - parameter group: The permissions for the group class
+         *  - parameter others: The permissions for the others class
+         *
+         *  - throws: `FileSystem.Item.OperationError.setPermissionsFailed` if the permissions of the item couldn't be set
+         */
+        func setPermissions(forOwner owner: Permission, group: Permission = [], others: Permission = []) throws {
+            do {
+                let octal = Permission.octalRepresentation(of: [owner, group, others])
+                try fileManager.setAttributes([.posixPermissions: octal], ofItemAtPath: path)
+            } catch {
+                throw OperationError.setPermissionsFailed(self)
             }
         }
     }
