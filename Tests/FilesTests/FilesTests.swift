@@ -647,6 +647,27 @@ class FilesTests: XCTestCase {
             try assert(subfolder.file(named: "file"), throwsError: File.PathError.invalid(file.path))
         }
     }
+
+    func testSettingFilePermissions() {
+        performTest {
+            let fileManager = FileManager.default
+            let file = try folder.createFile(named: "file")
+            try file.setPermissions(forOwner: [.read, .write, .execute])
+            XCTAssertTrue(fileManager.isReadableFile(atPath: file.path))
+            XCTAssertTrue(fileManager.isWritableFile(atPath: file.path))
+            XCTAssertTrue(fileManager.isExecutableFile(atPath: file.path))
+
+            try file.setPermissions(forOwner: [.read, .write])
+            XCTAssertTrue(fileManager.isReadableFile(atPath: file.path))
+            XCTAssertTrue(fileManager.isWritableFile(atPath: file.path))
+            XCTAssertFalse(fileManager.isExecutableFile(atPath: file.path))
+
+            try file.setPermissions(forOwner: [.read])
+            XCTAssertTrue(fileManager.isReadableFile(atPath: file.path))
+            XCTAssertFalse(fileManager.isWritableFile(atPath: file.path))
+            XCTAssertFalse(fileManager.isExecutableFile(atPath: file.path))
+        }
+    }
     
     // MARK: - Utilities
     
