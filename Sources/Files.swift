@@ -287,8 +287,12 @@ public class FileSystem {
          *  - throws: `FileSystem.Item.OperationError.moveFailed` if the item couldn't be moved
          */
         public func move(to newParent: Folder) throws {
-            let newPath = newParent.path + name
-            
+            var newPath = newParent.path + name
+
+            if kind == .folder && !newPath.hasSuffix("/") {
+                newPath += "/"
+            }
+
             do {
                 try fileManager.moveItem(atPath: path, toPath: newPath)
                 path = newPath
