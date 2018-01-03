@@ -273,6 +273,18 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(folder.files.count, 1)
         }
     }
+
+    func testMovingFolders() {
+        performTest {
+            let a = try folder.createSubfolder(named: "A")
+            let b = try a.createSubfolder(named: "B")
+            _ = try b.createSubfolder(named: "C")
+
+            try b.move(to: folder)
+            XCTAssertTrue(folder.containsSubfolder(named: "B"))
+            XCTAssertTrue(b.containsSubfolder(named: "C"))
+        }
+    }
     
     func testCopyingFolders() {
         performTest {
