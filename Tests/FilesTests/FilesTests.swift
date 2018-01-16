@@ -474,6 +474,29 @@ class FilesTests: XCTestCase {
             try XCTAssertEqual(file.read(), "New content".data(using: .utf8))
         }
     }
+
+    func testAppendingDataToFile() {
+        performTest {
+            let file = try folder.createFile(named: "file")
+            let data = "Old content\n".data(using: .utf8)!
+            try file.write(data: data)
+
+            let newData = "I'm the appended content 💯\n".data(using: .utf8)!
+            try file.append(data: newData)
+            try XCTAssertEqual(file.read(), "Old content\nI'm the appended content 💯\n".data(using: .utf8))
+        }
+    }
+
+    func testAppendingStringToFile() {
+        performTest {
+            let file = try folder.createFile(named: "file")
+            try file.write(string: "Old content\n")
+
+            let newString = "I'm the appended content 💯\n"
+            try file.append(string: newString)
+            try XCTAssertEqual(file.read(), "Old content\nI'm the appended content 💯\n".data(using: .utf8))
+        }
+    }
     
     func testFileDescription() {
         performTest {
@@ -717,6 +740,8 @@ class FilesTests: XCTestCase {
         ("testDeletingNonExistingFileThrows", testDeletingNonExistingFileThrows),
         ("testWritingDataToFile", testWritingDataToFile),
         ("testWritingStringToFile", testWritingStringToFile),
+        ("testAppendingDataToFile", testAppendingDataToFile),
+        ("testAppendingStringToFile", testAppendingStringToFile),
         ("testFileDescription", testFileDescription),
         ("testFolderDescription", testFolderDescription),
         ("testMovingFolderContents", testMovingFolderContents),

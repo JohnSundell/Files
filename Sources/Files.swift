@@ -528,6 +528,29 @@ public final class File: FileSystem.Item, FileSystemIterable {
         
         try write(data: data)
     }
+
+    /**
+     *  Append data to the end of the file
+     *
+     *  - parameter data: The data to append to the file
+     *
+     *  - throws: `File.Error.writeFailed` if the file couldn't be written to
+     */
+    public func append(data: Data) throws {
+        // TODO: Implement
+    }
+
+    /**
+     *  Append a string to the end of the file
+     *
+     *  - parameter string: The string to append to the file
+     *  - parameter encoding: Optionally give which encoding that the string should be encoded in (defaults to UTF-8)
+     *
+     *  - throws: `File.Error.writeFailed` if the string couldn't be encoded, or written to the file
+     */
+    public func append(string: String, encoding: String.Encoding = .utf8) throws {
+        // TODO: Implement
+    }
     
     /**
      *  Copy this file to a new folder
