@@ -537,7 +537,17 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - throws: `File.Error.writeFailed` if the file couldn't be written to
      */
     public func append(data: Data) throws {
-        // TODO: Implement
+        do {
+            let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+            defer {
+                handle.closeFile()
+            }
+
+            handle.seekToEndOfFile()
+            handle.write(data)
+        } catch {
+            throw Error.writeFailed
+        }
     }
 
     /**
@@ -549,7 +559,11 @@ public final class File: FileSystem.Item, FileSystemIterable {
      *  - throws: `File.Error.writeFailed` if the string couldn't be encoded, or written to the file
      */
     public func append(string: String, encoding: String.Encoding = .utf8) throws {
-        // TODO: Implement
+        guard let data = string.data(using: encoding) else {
+            throw Error.writeFailed
+        }
+
+        try append(data: data)
     }
     
     /**
