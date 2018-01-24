@@ -489,6 +489,22 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testFilesDescription() {
+        performTest {
+            let fileA = try folder.createFile(named: "fileA")
+            let fileB = try folder.createFile(named: "fileB")
+            XCTAssertEqual(folder.files.description, "\(fileA.description)\n\(fileB.description)")
+        }
+    }
+
+    func testSubfoldersDescription() {
+        performTest {
+            let folderA = try folder.createSubfolder(named: "folderA")
+            let folderB = try folder.createSubfolder(named: "folderB")
+            XCTAssertEqual(folder.subfolders.description, "\(folderA.description)\n\(folderB.description)")
+        }
+    }
+
     func testMovingFolderContents() {
         performTest {
             let parentFolder = try folder.createSubfolder(named: "parentA")
@@ -719,6 +735,8 @@ class FilesTests: XCTestCase {
         ("testWritingStringToFile", testWritingStringToFile),
         ("testFileDescription", testFileDescription),
         ("testFolderDescription", testFolderDescription),
+        ("testFilesDescription", testFilesDescription),
+        ("testSubfoldersDescription", testSubfoldersDescription),
         ("testMovingFolderContents", testMovingFolderContents),
         ("testMovingFolderHiddenContents", testMovingFolderHiddenContents),
         ("testAccessingHomeFolder", testAccessingHomeFolder),
