@@ -850,7 +850,7 @@ public protocol FileSystemIterable {
  *  You don't create instances of this class yourself. Instead, you can access various sequences on a `Folder`, for example
  *  containing its files and subfolders. The sequence is lazily evaluated when you perform operations on it.
  */
-public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSystemIterable {
+public class FileSystemSequence<T: FileSystem.Item>: Sequence, CustomStringConvertible where T: FileSystemIterable {
     /// The number of items contained in this sequence. Accessing this causes the sequence to be evaluated.
     public var count: Int {
         var count = 0
@@ -895,6 +895,10 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence where T: FileSyste
     /// Move all the items in this sequence to a new folder. See `FileSystem.Item.move(to:)` for more info.
     public func move(to newParent: Folder) throws {
         try forEach { try $0.move(to: newParent) }
+    }
+
+    public var description: String {
+        return map { $0.description }.joined(separator: "\n")
     }
 }
 
