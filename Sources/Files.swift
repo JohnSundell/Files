@@ -539,12 +539,9 @@ public final class File: FileSystem.Item, FileSystemIterable {
     public func append(data: Data) throws {
         do {
             let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
-            defer {
-                handle.closeFile()
-            }
-
             handle.seekToEndOfFile()
             handle.write(data)
+            handle.closeFile()
         } catch {
             throw Error.writeFailed
         }
