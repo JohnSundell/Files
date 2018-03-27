@@ -528,6 +528,40 @@ public final class File: FileSystem.Item, FileSystemIterable {
         
         try write(data: data)
     }
+
+    /**
+     *  Append data to the end of the file
+     *
+     *  - parameter data: The data to append to the file
+     *
+     *  - throws: `File.Error.writeFailed` if the file couldn't be written to
+     */
+    public func append(data: Data) throws {
+        do {
+            let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+            handle.seekToEndOfFile()
+            handle.write(data)
+            handle.closeFile()
+        } catch {
+            throw Error.writeFailed
+        }
+    }
+
+    /**
+     *  Append a string to the end of the file
+     *
+     *  - parameter string: The string to append to the file
+     *  - parameter encoding: Optionally give which encoding that the string should be encoded in (defaults to UTF-8)
+     *
+     *  - throws: `File.Error.writeFailed` if the string couldn't be encoded, or written to the file
+     */
+    public func append(string: String, encoding: String.Encoding = .utf8) throws {
+        guard let data = string.data(using: encoding) else {
+            throw Error.writeFailed
+        }
+
+        try append(data: data)
+    }
     
     /**
      *  Copy this file to a new folder
