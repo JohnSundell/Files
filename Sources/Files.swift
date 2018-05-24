@@ -685,6 +685,15 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
     public func containsFile(named fileName: String) -> Bool {
         return (try? file(named: fileName)) != nil
     }
+
+    /**
+     *  Return whether this folder contains a given file
+     *
+     *  - parameter file: The file to check for
+     */
+    public func contains(_ file: File) -> Bool {
+        return files.contains(file)
+    }
     
     /**
      *  Return a folder with a given name that is contained in this folder
@@ -715,6 +724,15 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      */
     public func containsSubfolder(named folderName: String) -> Bool {
         return (try? subfolder(named: folderName)) != nil
+    }
+
+    /**
+     *  Return whether this folder contains a given subfolder
+     *
+     *  - parameter subfolder: The folder to check for
+     */
+    public func contains(_ subfolder: Folder) -> Bool {
+        return subfolders.contains(subfolder)
     }
     
     /**
