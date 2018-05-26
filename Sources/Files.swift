@@ -692,7 +692,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter file: The file to check for
      */
     public func contains(_ file: File) -> Bool {
-        return files.contains(file)
+        return containsFile(named: file.name)
     }
     
     /**
@@ -732,7 +732,7 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
      *  - parameter subfolder: The folder to check for
      */
     public func contains(_ subfolder: Folder) -> Bool {
-        return subfolders.contains(subfolder)
+        return containsSubfolder(named: subfolder.name)
     }
     
     /**

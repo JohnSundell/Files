@@ -701,7 +701,8 @@ class FilesTests: XCTestCase {
 
     func testFolderContainsFile() {
         performTest {
-            let fileA = try FileSystem().temporaryFolder.createFile(named: UUID().uuidString)
+            let subfolder = try folder.createSubfolder(named: "subfolder")
+            let fileA = try subfolder.createFile(named: "A")
             XCTAssertFalse(folder.contains(fileA))
 
             let fileB = try folder.createFile(named: "B")
@@ -711,7 +712,8 @@ class FilesTests: XCTestCase {
 
     func testFolderContainsSubfolder() {
         performTest {
-            let subfolderA = try FileSystem().temporaryFolder.createSubfolder(named: UUID().uuidString)
+            let subfolder = try folder.createSubfolder(named: "subfolder")
+            let subfolderA = try subfolder.createSubfolder(named: "A")
             XCTAssertFalse(folder.contains(subfolderA))
 
             let subfolderB = try folder.createSubfolder(named: "B")
