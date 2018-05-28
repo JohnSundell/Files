@@ -198,11 +198,11 @@ public class FileSystem {
         /// The date when the item was last modified
         public private(set) lazy var modificationDate: Date = self.loadModificationDate()
         
-        /// The date when the item was created
-        public private(set) lazy var creationDate: Date = self.loadCreationDate()
+        /// The date when the item was created, or `nil` if the information is not available
+        public private(set) lazy var creationDate: Date? = self.loadCreationDate()
         
-        /// The size of the item in bytes
-        public private(set) lazy var size: UInt64 = self.loadSize()
+        /// The size of the item in bytes, or `nil` if the information is not available
+        public private(set) lazy var size: UInt64? = self.loadSize()
         
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
@@ -1018,14 +1018,14 @@ private extension FileSystem.Item {
         return attributes[FileAttributeKey.modificationDate] as! Date
     }
     
-    func loadCreationDate() -> Date {
-        let attributes = try! fileManager.attributesOfItem(atPath: path)
-        return attributes[FileAttributeKey.creationDate] as! Date
+    func loadCreationDate() -> Date? {
+        let attributes = try? fileManager.attributesOfItem(atPath: path)
+        return attributes?[FileAttributeKey.creationDate] as? Date
     }
     
-    func loadSize() -> UInt64 {
-        let attributes = try! fileManager.attributesOfItem(atPath: path)
-        return attributes[FileAttributeKey.size] as! UInt64
+    func loadSize() -> UInt64? {
+        let attributes = try? fileManager.attributesOfItem(atPath: path)
+        return attributes?[FileAttributeKey.size] as? UInt64
     }
 }
 
