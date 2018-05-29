@@ -45,6 +45,7 @@ public class FileSystem {
      *  to perform operations that are supported by both files & folders.
      */
     public class Item: Equatable, CustomStringConvertible {
+        public typealias ByteCount = Int
         /// Errror type used for invalid paths for files or folders
         public enum PathError: Error, Equatable, CustomStringConvertible {
             /// Thrown when an empty path was given when initializing a file
@@ -202,7 +203,7 @@ public class FileSystem {
         public private(set) lazy var creationDate: Date? = self.loadCreationDate()
         
         /// The size of the item in bytes, or `nil` if the information is not available
-        public private(set) lazy var size: UInt64? = self.loadSize()
+        public private(set) lazy var size: ByteCount? = self.loadSize()
         
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
@@ -1023,9 +1024,10 @@ private extension FileSystem.Item {
         return attributes?[FileAttributeKey.creationDate] as? Date
     }
     
-    func loadSize() -> UInt64? {
+    func loadSize() -> ByteCount? {
         let attributes = try? fileManager.attributesOfItem(atPath: path)
-        return attributes?[FileAttributeKey.size] as? UInt64
+        guard let size = attributes?[FileAttributeKey.size] as? UInt64 else { return nil }
+        return ByteCount(size)
     }
 }
 
