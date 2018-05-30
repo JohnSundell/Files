@@ -425,6 +425,7 @@ class FilesTests: XCTestCase {
     }
     
     func testCreationDate() {
+        // .creationDate will return nil on linux
         #if !os(Linux)
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
@@ -437,6 +438,8 @@ class FilesTests: XCTestCase {
     }
     
     func testSize() {
+        // .size will return nil on linux
+        #if !os(Linux)
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
             XCTAssertGreaterThan(subfolder.size, 0)
@@ -449,6 +452,7 @@ class FilesTests: XCTestCase {
             try fileWithContent.write(data: data)
             XCTAssertEqual(fileWithContent.size, 10)
         }
+        #endif
     }
     
     func testParent() {
