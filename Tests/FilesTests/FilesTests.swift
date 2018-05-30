@@ -425,38 +425,29 @@ class FilesTests: XCTestCase {
     }
     
     func testCreationDate() {
+        #if !os(Linux)
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
-            if let folderCreationDate = subfolder.creationDate {
-                XCTAssertTrue(Calendar.current.isDateInToday(folderCreationDate))
-            }
+            XCTAssertTrue(Calendar.current.isDateInToday(subfolder.creationDate))
             
             let file = try folder.createFile(named: "File")
-            if let fileCreationDate = file.creationDate {
-                XCTAssertTrue(Calendar.current.isDateInToday(fileCreationDate))
-            }
+            XCTAssertTrue(Calendar.current.isDateInToday(file.creationDate))
         }
+        #endif
     }
     
     func testSize() {
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
-            if let subfolderSize = subfolder.size {
-                // An empty folder has a size bigger than 0
-                XCTAssertGreaterThan(subfolderSize, 0)
-            }
+            XCTAssertGreaterThan(subfolder.size, 0)
             
-            let file = try folder.createFile(named: "EmptyFile")
-            if let emptyFileSize = file.size {
-                XCTAssertEqual(emptyFileSize, 0)
-            }
+            let emptyFile = try folder.createFile(named: "EmptyFile")
+            XCTAssertEqual(emptyFile.size, 0)
             
             let data = "1234567890".data(using: .utf8)!
             let fileWithContent = try folder.createFile(named: "FileWithContent")
             try fileWithContent.write(data: data)
-            if let fileWithContentSize = fileWithContent.size {
-                XCTAssertEqual(fileWithContentSize, 10)
-            }
+            XCTAssertEqual(fileWithContent.size, 10)
         }
     }
     

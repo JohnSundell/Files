@@ -200,10 +200,10 @@ public class FileSystem {
         public private(set) lazy var modificationDate: Date = self.loadModificationDate()
         
         /// The date when the item was created, or `nil` if the information is not available
-        public private(set) lazy var creationDate: Date? = self.loadCreationDate()
+        public private(set) lazy var creationDate: Date! = self.loadCreationDate()
         
         /// The size of the item in bytes, or `nil` if the information is not available
-        public private(set) lazy var size: ByteCount? = self.loadSize()
+        public private(set) lazy var size: ByteCount! = self.loadSize()
         
         /// The folder that the item is contained in, or `nil` if this item is the root folder of the file system
         public var parent: Folder? {
