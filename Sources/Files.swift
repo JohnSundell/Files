@@ -238,6 +238,30 @@ public class FileSystem {
             }
         }
 
+        /**
+         *  Rename the item
+         *
+         *  - parameter newName: The new name that the item should have
+         *  - parameter keepExtension: Whether the file should keep the same extension as it had before (defaults to `true`)
+         *
+         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
+         */
+        public func rename(to newName: String, keepExtension: Bool) throws {
+            if keepExtension {
+                try rename(to: newName, extension: .keep)
+            } else {
+                let nameComponents = newName.components(separatedBy: ".")
+                let nameComponent = nameComponents[0]
+                let action: ExtensionAction
+                if nameComponents.count > 1 {
+                    action = .change(to: nameComponents[1])
+                } else {
+                    action = .remove
+                }
+                try rename(to: nameComponent, extension: action)
+            }
+        }
+        
         /// Actions that can be taken on an extension while renaming an item
         public enum ExtensionAction {
             /// Keep the item's current extension
@@ -318,30 +342,6 @@ public class FileSystem {
          */
         public func rename(to newName: String, extension newExtension: String) throws {
             try rename(to: newName, extension: .change(to: newExtension))
-        }
-
-        /**
-         *  Rename the item
-         *
-         *  - parameter newName: The new name that the item should have
-         *  - parameter keepExtension: Whether the file should keep the same extension as it had before (defaults to `true`)
-         *
-         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
-         */
-        public func rename(to newName: String, keepExtension: Bool) throws {
-            if keepExtension {
-                try rename(to: newName, extension: .keep)
-            } else {
-                let nameComponents = newName.components(separatedBy: ".")
-                let nameComponent = nameComponents[0]
-                let action: ExtensionAction
-                if nameComponents.count > 1 {
-                    action = .change(to: nameComponents[1])
-                } else {
-                    action = .remove
-                }
-                try rename(to: nameComponent, extension: action)
-            }
         }
         
         /**
