@@ -129,6 +129,27 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.name, "other.txt")
             XCTAssertEqual(file.path, folder.path + "other.txt")
             XCTAssertEqual(file.extension, "txt")
+
+            // Now try renaming the file using the extension actions
+            try file.rename(to: "some", extension: .keep)
+            XCTAssertEqual(file.name, "some.txt")
+            XCTAssertEqual(file.path, folder.path + "some.txt")
+            XCTAssertEqual(file.extension, "txt")
+
+            try file.rename(to: "different", extension: .change(to: "pdf"))
+            XCTAssertEqual(file.name, "different.pdf")
+            XCTAssertEqual(file.path, folder.path + "different.pdf")
+            XCTAssertEqual(file.extension, "pdf")
+
+            try file.rename(to: "another", extension: .remove)
+            XCTAssertEqual(file.name, "another")
+            XCTAssertEqual(file.path, folder.path + "another")
+            XCTAssertNil(file.extension)
+
+            try file.rename(to: "lastOne", extension: ".png")
+            XCTAssertEqual(file.name, "lastOne.png")
+            XCTAssertEqual(file.path, folder.path + "lastOne.png")
+            XCTAssertEqual(file.extension, "png")
         }
     }
     
