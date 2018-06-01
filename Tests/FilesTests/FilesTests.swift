@@ -141,6 +141,11 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.path, folder.path + "different.pdf")
             XCTAssertEqual(file.extension, "pdf")
 
+            try file.rename(to: "oneMore.txt", extension: .change(to: "txt"))
+            XCTAssertEqual(file.name, "oneMore.txt")
+            XCTAssertEqual(file.path, folder.path + "oneMore.txt")
+            XCTAssertEqual(file.extension, "txt")
+
             try file.rename(to: "another", extension: .remove)
             XCTAssertEqual(file.name, "another")
             XCTAssertEqual(file.path, folder.path + "another")
