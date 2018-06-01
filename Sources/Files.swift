@@ -254,7 +254,7 @@ public class FileSystem {
                 let nameComponent = nameComponents[0]
                 let action: ExtensionAction
                 if nameComponents.count > 1 {
-                    action = .change(to: nameComponents[1])
+                    action = .change(to: nameComponents.last!)
                 } else {
                     action = .remove
                 }
