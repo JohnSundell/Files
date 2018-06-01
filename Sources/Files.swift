@@ -237,7 +237,89 @@ public class FileSystem {
                 self.name = pathComponents[pathComponents.count - 2]
             }
         }
-        
+
+        /// Actions that can be taken on an extension while renaming an item
+        public enum ExtensionAction {
+            /// Keep the item's current extension
+            case keep
+            /// Remove the item's current extenion
+            case remove
+            /// Change the item's extension to the contained String
+            case change(to: String)
+        }
+
+        /**
+         *  Rename the item
+         *
+         *  - parameter newName: The new name that the item should have
+         *  - parameter extension: The action to take on the item's extension (defaults to .keep)
+         *
+         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
+         */
+        public func rename(to newName: String, extension extensionAction: ExtensionAction = .keep) throws {
+            guard let parent = parent else {
+                throw OperationError.renameFailed(self)
+            }
+
+            var newName = newName
+
+            switch extensionAction {
+            case .keep:
+                if let `extension` = `extension` {
+                    let extensionString = ".\(`extension`)"
+
+                    if !newName.hasSuffix(extensionString) {
+                        newName += extensionString
+                    }
+                }
+
+            case .remove:
+                if let `extension` = `extension` {
+                    let extensionString = ".\(`extension`)"
+
+                    if newName.hasSuffix(extensionString) {
+                        newName = String(newName.dropLast(extensionString.count))
+                    }
+                }
+
+            case .change(var newExtension):
+                if !newExtension.hasPrefix(".") {
+                    newExtension = "." + newExtension
+                }
+
+                if !newName.hasSuffix(newExtension) {
+                    newName += newExtension
+                }
+            }
+
+            var newPath = parent.path + newName
+
+            if kind == .folder && !newPath.hasSuffix("/") {
+                newPath += "/"
+            }
+
+            do {
+                try fileManager.moveItem(atPath: path, toPath: newPath)
+
+                name = newName
+                path = newPath
+            } catch {
+                throw OperationError.renameFailed(self)
+            }
+        }
+
+        /**
+         *  Rename the item
+         *
+         *  - parameter newName: The new name that the item should have
+         *  - parameter newExtension: The new extension that the item should have
+         *
+         *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
+         */
+        public func rename(to newName: String, extension newExtension: String) throws {
+            try rename(to: newName, extension: .change(to: newExtension))
+        }
+
         /**
          *  Rename the item
          *
@@ -246,36 +328,19 @@ public class FileSystem {
          *
          *  - throws: `FileSystem.Item.OperationError.renameFailed` if the item couldn't be renamed
          */
-        public func rename(to newName: String, keepExtension: Bool = true) throws {
-            guard let parent = parent else {
-                throw OperationError.renameFailed(self)
-            }
-            
-            var newName = newName
-            
+        public func rename(to newName: String, keepExtension: Bool) throws {
             if keepExtension {
-                if let `extension` = `extension` {
-                    let extensionString = ".\(`extension`)"
-                    
-                    if !newName.hasSuffix(extensionString) {
-                        newName += extensionString
-                    }
+                try rename(to: newName, extension: .keep)
+            } else {
+                let nameComponents = newName.components(separatedBy: ".")
+                let nameComponent = nameComponents[0]
+                let action: ExtensionAction
+                if nameComponents.count > 1 {
+                    action = .change(to: nameComponents[1])
+                } else {
+                    action = .remove
                 }
-            }
-            
-            var newPath = parent.path + newName
-            
-            if kind == .folder && !newPath.hasSuffix("/") {
-                newPath += "/"
-            }
-            
-            do {
-                try fileManager.moveItem(atPath: path, toPath: newPath)
-                
-                name = newName
-                path = newPath
-            } catch {
-                throw OperationError.renameFailed(self)
+                try rename(to: nameComponent, extension: action)
             }
         }
         
