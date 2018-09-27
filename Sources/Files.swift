@@ -45,6 +45,10 @@ public class FileSystem {
      *  to perform operations that are supported by both files & folders.
      */
     public class Item: Equatable, CustomStringConvertible {
+        #if os(macOS)
+        /// The attributes of the `FileSystem.Item` on mac os platform.
+        public typealias Attributes = [FileAttributeKey: Any]
+        #endif
         /// Errror type used for invalid paths for files or folders
         public enum PathError: Error, Equatable, CustomStringConvertible {
             /// Thrown when an empty path was given when initializing a file
@@ -212,7 +216,21 @@ public class FileSystem {
         
         fileprivate let kind: Kind
         fileprivate let fileManager: FileManager
-        
+      
+        #if os(macOS)
+        /// The file attributes of the item on file system.
+        @available(macOS 10.5, *)
+        public var attributes: Attributes? {
+            get {
+                return try? fileManager.attributesOfItem(atPath: path)
+            }
+          
+            set {
+                try? fileManager.setAttributes(newValue ?? [:], ofItemAtPath: path)
+            }
+        }
+        #endif
+      
         fileprivate init(path: String, kind: Kind, using fileManager: FileManager) throws {
             guard !path.isEmpty else {
                 throw PathError.empty
