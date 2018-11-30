@@ -1068,7 +1068,7 @@ private extension FileManager {
             pathComponents.removeLast()
         }
 
-        return pathComponents.joined(separator: "/")
+        return pathComponents.isEmpty ? "/" : pathComponents.joined(separator: "/")
     }
 
     func pathByFillingInParentReferences(for path: String, prependCurrentFolderPath: Bool = false) throws -> String {
