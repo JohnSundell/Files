@@ -593,16 +593,11 @@ public final class Folder: FileSystem.Item, FileSystemIterable {
         /// Thrown when a folder couldn't be created
         case creatingFolderFailed
 
-        @available(*, deprecated: 1.4.0, renamed: "creatingFolderFailed")
-        case creatingSubfolderFailed
-
         /// A string describing the error
         public var description: String {
             switch self {
             case .creatingFolderFailed:
                 return "Failed to create folder"
-            case .creatingSubfolderFailed:
-                return "Failed to create subfolder"
             }
         }
     }
