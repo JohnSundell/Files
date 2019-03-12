@@ -698,6 +698,28 @@ class FilesTests: XCTestCase {
             try assert(subfolder.file(named: "file"), throwsError: File.PathError.invalid(file.path))
         }
     }
+
+    func testFolderContainsFile() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "subfolder")
+            let fileA = try subfolder.createFile(named: "A")
+            XCTAssertFalse(folder.contains(fileA))
+
+            let fileB = try folder.createFile(named: "B")
+            XCTAssertTrue(folder.contains(fileB))
+        }
+    }
+
+    func testFolderContainsSubfolder() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "subfolder")
+            let subfolderA = try subfolder.createSubfolder(named: "A")
+            XCTAssertFalse(folder.contains(subfolderA))
+
+            let subfolderB = try folder.createSubfolder(named: "B")
+            XCTAssertTrue(folder.contains(subfolderB))
+        }
+    }
     
     // MARK: - Utilities
     
@@ -775,7 +797,9 @@ class FilesTests: XCTestCase {
         ("testCreateFolderIfNeeded", testCreateFolderIfNeeded),
         ("testCreateSubfolderIfNeeded", testCreateSubfolderIfNeeded),
         ("testCreatingFileWithString", testCreatingFileWithString),
-        ("testUsingCustomFileManager", testUsingCustomFileManager)
+        ("testUsingCustomFileManager", testUsingCustomFileManager),
+        ("testFolderContainsFile", testFolderContainsFile),
+        ("testFolderContainsSubfolder", testFolderContainsSubfolder)
     ]
 }
 
