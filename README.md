@@ -6,7 +6,7 @@
     <a href="https://dashboard.buddybuild.com/apps/5932f7d9b0c2b000015d6b79/build/latest?branch=master">
         <img src="https://dashboard.buddybuild.com/api/statusImage?appID=5932f7d9b0c2b000015d6b79&branch=master&build=latest" alt="BuddyBuild" />
     </a>
-    <img src="https://img.shields.io/badge/Swift-4.0-orange.svg" />
+    <img src="https://img.shields.io/badge/Swift-5.0-orange.svg" />
     <a href="https://cocoapods.org/pods/Files">
         <img src="https://img.shields.io/cocoapods/v/Files.svg" alt="CocoaPods" />
     </a>
