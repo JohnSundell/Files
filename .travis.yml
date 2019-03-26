@@ -1,8 +1,5 @@
-os:
-    - linux
-    - osx
+os: linux
 language: generic
-osx_image: xcode10.2
 sudo: required
 dist: trusty
 env:
