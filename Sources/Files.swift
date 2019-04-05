@@ -1131,7 +1131,7 @@ private extension ObjCBool {
 }
 #endif
 
-#if !os(Linux)
+#if os(macOS)
 extension FileSystem {
     /// A reference to the document folder used by this file system.
     public var documentFolder: Folder? {
