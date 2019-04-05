@@ -589,6 +589,27 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testRelativePaths() {
+        performTest {
+            let file = try folder.createFile(named: "FileA")
+            let subfolder = try folder.createSubfolder(named: "Folder")
+            let fileInSubfolder = try subfolder.createFile(named: "FileB")
+
+            XCTAssertEqual(file.path(relativeTo: folder), "FileA")
+            XCTAssertEqual(subfolder.path(relativeTo: folder), "Folder")
+            XCTAssertEqual(fileInSubfolder.path(relativeTo: folder), "Folder/FileB")
+        }
+    }
+
+    func testRelativePathIsAbsolutePathForNonParent() {
+        performTest {
+            let file = try folder.createFile(named: "FileA")
+            let subfolder = try folder.createSubfolder(named: "Folder")
+
+            XCTAssertEqual(file.path(relativeTo: subfolder), file.path)
+        }
+    }
+
     func testCreatingFileFromFileSystem() {
         performTest {
             let fileName = "three"
@@ -789,6 +810,8 @@ class FilesTests: XCTestCase {
         ("testAccessingHomeFolder", testAccessingHomeFolder),
         ("testAccessingCurrentWorkingDirectory", testAccessingCurrentWorkingDirectory),
         ("testNameExcludingExtensionWithLongFileName", testNameExcludingExtensionWithLongFileName),
+        ("testRelativePaths", testRelativePaths),
+        ("testRelativePathIsAbsolutePathForNonParent", testRelativePathIsAbsolutePathForNonParent),
         ("testCreatingFileFromFileSystem", testCreatingFileFromFileSystem),
         ("testCreateFileFromFileSystemIfNeeded", testCreateFileFromFileSystemIfNeeded),
         ("testCreatingFolderFromFileSystem", testCreatingFolderFromFileSystem),

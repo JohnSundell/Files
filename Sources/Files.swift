@@ -237,6 +237,30 @@ public class FileSystem {
                 self.name = pathComponents[pathComponents.count - 2]
             }
         }
+
+        /**
+         *  Return this item's path relative to a given parent folder
+         *
+         *  - parameter folder: The parent folder to return a relative path to
+         *
+         *  - returns: Either a relative path, if the passed folder is indeed
+         *  a parent (even if it's not a direct one) for this item. Otherwise
+         *  the item's full path is returned.
+         */
+        public func path(relativeTo folder: Folder) -> String {
+            guard path.hasPrefix(folder.path) else {
+                return path
+            }
+
+            let index = path.index(path.startIndex, offsetBy: folder.path.count)
+            var subpath = path[index...]
+
+            if subpath.hasSuffix("/") {
+                subpath.removeLast()
+            }
+
+            return String(subpath)
+        }
         
         /**
          *  Rename the item
