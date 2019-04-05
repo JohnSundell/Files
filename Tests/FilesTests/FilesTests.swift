@@ -803,14 +803,10 @@ class FilesTests: XCTestCase {
     ]
 }
 
-#if !os(Linux)
+#if os(macOS)
 extension FilesTests {
     func testAccessingDocumentFolder() {
-        #if os(tvOS)
-            XCTAssertNil(FileSystem().documentFolder, "Document folder should not be available on tvOS.")
-        #else
-            XCTAssertNotNil(FileSystem().documentFolder, "Document folder should be available.")
-        #endif
+        XCTAssertNotNil(FileSystem().documentFolder, "Document folder should be available.")
     }
     
     func testAccessingLibraryFolder() {
