@@ -52,26 +52,6 @@ public class FileSystem {
             /// Thrown when an item of the expected type wasn't found for a given path (contains the path)
             case invalid(String)
         
-            /// Operator used to compare two instances for equality
-            public static func ==(lhs: PathError, rhs: PathError) -> Bool {
-                switch lhs {
-                case .empty:
-                    switch rhs {
-                    case .empty:
-                        return true
-                    case .invalid(_):
-                        return false
-                    }
-                case .invalid(let pathA):
-                    switch rhs {
-                    case .empty:
-                        return false
-                    case .invalid(let pathB):
-                        return pathA == pathB
-                    }
-                }
-            }
-        
             /// A string describing the error
             public var description: String {
                 switch self {
@@ -93,56 +73,6 @@ public class FileSystem {
             case copyFailed(Item)
             /// Thrown when a file or folder couldn't be deleted (contains the item)
             case deleteFailed(Item)
-            
-            /// Operator used to compare two instances for equality
-            public static func ==(lhs: OperationError, rhs: OperationError) -> Bool {
-                switch lhs {
-                case .renameFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(let itemB):
-                        return itemA == itemB
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .moveFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(let itemB):
-                        return itemA == itemB
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .copyFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(let itemB):
-                        return itemA == itemB
-                    case .deleteFailed(_):
-                        return false
-                    }
-                case .deleteFailed(let itemA):
-                    switch rhs {
-                    case .renameFailed(_):
-                        return false
-                    case .moveFailed(_):
-                        return false
-                    case .copyFailed(_):
-                        return false
-                    case .deleteFailed(let itemB):
-                        return itemA == itemB
-                    }
-                }
-            }
 
             /// A string describing the error
             public var description: String {
