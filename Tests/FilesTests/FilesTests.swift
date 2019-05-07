@@ -414,6 +414,19 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testConvertingFileSequenceToRecursive() {
+        performTest {
+            try folder.createFile(named: "A")
+            try folder.createFile(named: "B")
+
+            let subfolder = try folder.createSubfolder(named: "1")
+            try subfolder.createFile(named: "1A")
+
+            let names = folder.files.recursive.names
+            XCTAssertEqual(names, ["A", "B", "1A"])
+        }
+    }
+
     func testModificationDate() {
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
@@ -792,6 +805,7 @@ class FilesTests: XCTestCase {
         ("testEnumeratingSubfoldersRecursively", testEnumeratingSubfoldersRecursively),
         ("testRenamingFoldersWhileEnumeratingSubfoldersRecursively", testRenamingFoldersWhileEnumeratingSubfoldersRecursively),
         ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
+        ("testConvertingFileSequenceToRecursive", testConvertingFileSequenceToRecursive),
         ("testModificationDate", testModificationDate),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),

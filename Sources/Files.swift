@@ -877,25 +877,35 @@ public class FileSystemSequence<T: FileSystem.Item>: Sequence, CustomStringConve
     }
 
     private let folder: Folder
-    private let recursive: Bool
+    private let isRecursive: Bool
     private let includeHidden: Bool
     private let fileManager: FileManager
 
     fileprivate init(folder: Folder, recursive: Bool, includeHidden: Bool, using fileManager: FileManager) {
         self.folder = folder
-        self.recursive = recursive
+        self.isRecursive = recursive
         self.includeHidden = includeHidden
         self.fileManager = fileManager
     }
     
     /// Create an iterator to use to iterate over the sequence
     public func makeIterator() -> FileSystemIterator<T> {
-        return FileSystemIterator(folder: folder, recursive: recursive, includeHidden: includeHidden, using: fileManager)
+        return FileSystemIterator(folder: folder, recursive: isRecursive, includeHidden: includeHidden, using: fileManager)
     }
     
     /// Move all the items in this sequence to a new folder. See `FileSystem.Item.move(to:)` for more info.
     public func move(to newParent: Folder) throws {
         try forEach { try $0.move(to: newParent) }
+    }
+
+    // Create a recursive version of this sequence
+    public var recursive: FileSystemSequence {
+        return FileSystemSequence(
+            folder: folder,
+            recursive: true,
+            includeHidden: includeHidden,
+            using: fileManager
+        )
     }
 
     public var description: String {
