@@ -105,6 +105,17 @@ class FilesTests: XCTestCase {
             try XCTAssertEqual(file.readAsString(), "Hello")
         }
     }
+	
+	func testReadingFileByLine() {
+		performTest {
+			let file = try folder.createFile(named: "string", contents: "FirstLine\nSecondLine\nThirdLine".data(using: .utf8)!)
+			
+			try XCTAssertEqual(file.readLine(0), "FirstLine")
+			
+			let lines = try file.readLine()
+			XCTAssertEqual(lines.count, 3)
+		}
+	}
 
     func testReadingFileAsInt() {
         performTest {

@@ -438,6 +438,43 @@ public final class File: FileSystem.Item, FileSystemIterable {
 
         return string
     }
+	
+	/**
+	*	Read the data containt whitin this file, and convert it to a string, returns  a specific line
+	*
+	*   - parameter: the index of the desired line
+	*	- throws: `File.Error.readFailed` if the file's data couldn't be read as a string
+	*/
+	public func readLine(_ index: Int, encoding: String.Encoding = .utf8) throws -> String {
+		guard let string = try String(data: read(), encoding: encoding) else {
+			throw Error.readFailed
+		}
+		let line = string.components(separatedBy: "\n")
+		
+		if (index < line.count) {
+			return line[index]
+		} else {
+			fatalError("No such line in File. Index out of range")
+		}
+	}
+	
+	/**
+	*	Read the data containt whitin this file, and convert it to a string array line by line
+	*
+	*	- throws: `File.Error.readFailed` if the file's data couldn't be read as a string
+	*/
+	public func readLine(encoding: String.Encoding = .utf8) throws -> [String] {
+		guard let string = try String(data: read(), encoding: encoding) else {
+			throw Error.readFailed
+		}
+		
+		var lines = string.components(separatedBy: "\n")
+		if lines[lines.count-1] == "" {
+			lines.remove(at: lines.count-1)
+		}
+		
+		return lines
+	}
 
     /**
      *  Read the data contained within this file, and convert it to an int
