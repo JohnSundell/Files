@@ -1,7 +1,7 @@
 /**
  *  Files
  *
- *  Copyright (c) 2017 John Sundell. Licensed under the MIT license, as follows:
+ *  Copyright (c) 2017-2019 John Sundell. Licensed under the MIT license, as follows:
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -64,10 +64,42 @@ class FilesTests: XCTestCase {
             try file.delete()
             
             // Attempting to read the file should now throw an error
-            try assert(file.read(), throwsError: File.Error.readFailed)
+            try assert(file.read(), throwsErrorOfType: ReadError.self)
             
             // Attempting to create a File instance with the path should now also fail
-            try assert(File(path: file.path), throwsError: File.PathError.invalid(file.path))
+            try assert(File(path: file.path), throwsErrorOfType: LocationError.self)
+        }
+    }
+
+    func testCreatingFileAtPath() {
+        performTest {
+            let path = "a/b/c.txt"
+
+            XCTAssertFalse(folder.containsFile(at: path))
+            try folder.createFile(at: path, contents: Data("Hello".utf8))
+
+            XCTAssertTrue(folder.containsFile(at: path))
+            XCTAssertTrue(folder.containsSubfolder(named: "a"))
+            XCTAssertTrue(folder.containsSubfolder(at: "a/b"))
+
+            let file = try folder.createFileIfNeeded(at: path)
+            XCTAssertEqual(try file.readAsString(), "Hello")
+        }
+    }
+
+    func testDroppingLeadingSlashWhenCreatingFileAtPath() {
+        performTest {
+            let path = "/a/b/c.txt"
+
+            XCTAssertFalse(folder.containsFile(at: path))
+            try folder.createFile(at: path, contents: Data("Hello".utf8))
+
+            XCTAssertTrue(folder.containsFile(at: path))
+            XCTAssertTrue(folder.containsSubfolder(named: "a"))
+            XCTAssertTrue(folder.containsSubfolder(at: "/a/b"))
+
+            let file = try folder.createFileIfNeeded(at: path)
+            XCTAssertEqual(try file.readAsString(), "Hello")
         }
     }
     
@@ -92,10 +124,44 @@ class FilesTests: XCTestCase {
             try subfolder.delete()
             
             // Attempting to create a Folder instance with the path should now fail
-            try assert(Folder(path: subfolder.path), throwsError: Folder.PathError.invalid(subfolder.path))
+            try assert(Folder(path: subfolder.path), throwsErrorOfType: LocationError.self)
             
             // The file contained in the folder should now also be deleted
-            try assert(file.read(), throwsError: File.Error.readFailed)
+            try assert(file.read(), throwsErrorOfType: ReadError.self)
+        }
+    }
+
+    func testCreatingSubfolderAtPath() {
+        performTest {
+            let path = "a/b/c"
+
+            XCTAssertFalse(folder.containsSubfolder(at: path))
+            try folder.createSubfolder(at: path).createFile(named: "d.txt")
+
+            XCTAssertTrue(folder.containsSubfolder(at: path))
+            XCTAssertTrue(folder.containsSubfolder(named: "a"))
+            XCTAssertTrue(folder.containsSubfolder(at: "a/b"))
+            XCTAssertTrue(folder.containsFile(at: "a/b/c/d.txt"))
+
+            let subfolder = try folder.createSubfolderIfNeeded(at: path)
+            XCTAssertEqual(subfolder.files.names(), ["d.txt"])
+        }
+    }
+
+    func testDroppingLeadingSlashWhenCreatingSubfolderAtPath() {
+        performTest {
+            let path = "a/b/c"
+
+            XCTAssertFalse(folder.containsSubfolder(at: path))
+            try folder.createSubfolder(at: path).createFile(named: "d.txt")
+
+            XCTAssertTrue(folder.containsSubfolder(at: path))
+            XCTAssertTrue(folder.containsSubfolder(named: "a"))
+            XCTAssertTrue(folder.containsSubfolder(at: "/a/b"))
+            XCTAssertTrue(folder.containsFile(at: "/a/b/c/d.txt"))
+
+            let subfolder = try folder.createSubfolderIfNeeded(at: path)
+            XCTAssertEqual(subfolder.files.names(), ["d.txt"])
         }
     }
 
@@ -112,7 +178,7 @@ class FilesTests: XCTestCase {
             try XCTAssertEqual(intFile.readAsInt(), 7)
 
             let nonIntFile = try folder.createFile(named: "nonInt", contents: "Not an int".data(using: .utf8)!)
-            try assert(nonIntFile.readAsInt(), throwsError: File.Error.readFailed)
+            try assert(nonIntFile.readAsInt(), throwsErrorOfType: ReadError.self)
         }
     }
     
@@ -205,7 +271,7 @@ class FilesTests: XCTestCase {
             let subfolderA = try folder.createSubfolder(named: "A")
             let subfolderB = try subfolderA.createSubfolder(named: "B")
             let file = try subfolderB.createFile(named: "C")
-            try XCTAssertEqual(folder.file(atPath: "A/B/C"), file)
+            try XCTAssertEqual(folder.file(at: "A/B/C"), file)
         }
     }
 
@@ -214,7 +280,7 @@ class FilesTests: XCTestCase {
             let subfolderA = try folder.createSubfolder(named: "A")
             let subfolderB = try subfolderA.createSubfolder(named: "B")
             let subfolderC = try subfolderB.createSubfolder(named: "C")
-            try XCTAssertEqual(folder.subfolder(atPath: "A/B/C"), subfolderC)
+            try XCTAssertEqual(folder.subfolder(at: "A/B/C"), subfolderC)
         }
     }
 
@@ -222,10 +288,10 @@ class FilesTests: XCTestCase {
         performTest {
             try folder.createFile(named: "A")
             try folder.createFile(named: "B")
-            XCTAssertEqual(folder.files.count, 2)
+            XCTAssertEqual(folder.files.count(), 2)
 
             try folder.empty()
-            XCTAssertEqual(folder.files.count, 0)
+            XCTAssertEqual(folder.files.count(), 0)
         }
     }
 
@@ -235,14 +301,14 @@ class FilesTests: XCTestCase {
 
             try subfolder.createFile(named: "A")
             try subfolder.createFile(named: ".B")
-            XCTAssertEqual(subfolder.makeFileSequence(includeHidden: true).count, 2)
+            XCTAssertEqual(subfolder.files.includingHidden.count(), 2)
 
             // Per default, hidden files should not be deleted
             try subfolder.empty()
-            XCTAssertEqual(subfolder.makeFileSequence(includeHidden: true).count, 1)
+            XCTAssertEqual(subfolder.files.includingHidden.count(), 1)
 
-            try subfolder.empty(includeHidden: true)
-            XCTAssertEqual(folder.files.count, 0)
+            try subfolder.empty(includingHidden: true)
+            XCTAssertEqual(folder.files.count(), 0)
         }
     }
     
@@ -250,27 +316,27 @@ class FilesTests: XCTestCase {
         performTest {
             try folder.createFile(named: "A")
             try folder.createFile(named: "B")
-            XCTAssertEqual(folder.files.count, 2)
+            XCTAssertEqual(folder.files.count(), 2)
             
             let subfolder = try folder.createSubfolder(named: "folder")
             try folder.files.move(to: subfolder)
             try XCTAssertNotNil(subfolder.file(named: "A"))
             try XCTAssertNotNil(subfolder.file(named: "B"))
-            XCTAssertEqual(folder.files.count, 0)
+            XCTAssertEqual(folder.files.count(), 0)
         }
     }
     
     func testCopyingFiles() {
         performTest {
             let file = try folder.createFile(named: "A")
-            try file.write(string: "content")
+            try file.write("content")
             
             let subfolder = try folder.createSubfolder(named: "folder")
             try file.copy(to: subfolder)
             try XCTAssertNotNil(folder.file(named: "A"))
             try XCTAssertNotNil(subfolder.file(named: "A"))
             try XCTAssertEqual(file.read(), subfolder.file(named: "A").read())
-            XCTAssertEqual(folder.files.count, 1)
+            XCTAssertEqual(folder.files.count(), 1)
         }
     }
 
@@ -294,8 +360,8 @@ class FilesTests: XCTestCase {
             try copyingFolder.copy(to: subfolder)
             XCTAssertTrue(folder.containsSubfolder(named: "A"))
             XCTAssertTrue(subfolder.containsSubfolder(named: "A"))
-            XCTAssertEqual(folder.subfolders.count, 2)
-            XCTAssertEqual(subfolder.subfolders.count, 1)
+            XCTAssertEqual(folder.subfolders.count(), 2)
+            XCTAssertEqual(subfolder.subfolders.count(), 1)
         }
     }
     
@@ -308,8 +374,8 @@ class FilesTests: XCTestCase {
             // Hidden files should be excluded by default
             try folder.createFile(named: ".hidden")
             
-            XCTAssertEqual(folder.files.names.sorted(), ["1", "2", "3"])
-            XCTAssertEqual(folder.files.count, 3)
+            XCTAssertEqual(folder.files.names().sorted(), ["1", "2", "3"])
+            XCTAssertEqual(folder.files.count(), 3)
         }
     }
     
@@ -319,9 +385,9 @@ class FilesTests: XCTestCase {
             try subfolder.createFile(named: ".hidden")
             try subfolder.createFile(named: "visible")
             
-            let files = subfolder.makeFileSequence(includeHidden: true)
-            XCTAssertEqual(files.names.sorted(), [".hidden", "visible"])
-            XCTAssertEqual(files.count, 2)
+            let files = subfolder.files.includingHidden
+            XCTAssertEqual(files.names().sorted(), [".hidden", "visible"])
+            XCTAssertEqual(files.count(), 2)
         }
     }
     
@@ -344,9 +410,9 @@ class FilesTests: XCTestCase {
             try subfolder2B.createFile(named: "File2B")
             
             let expectedNames = ["File1", "File1A", "File1B", "File2", "File2A", "File2B"]
-            let sequence = folder.makeFileSequence(recursive: true)
-            XCTAssertEqual(sequence.names, expectedNames)
-            XCTAssertEqual(sequence.count, 6)
+            let sequence = folder.files.recursive
+            XCTAssertEqual(sequence.names(), expectedNames)
+            XCTAssertEqual(sequence.count(), 6)
         }
     }
     
@@ -356,8 +422,8 @@ class FilesTests: XCTestCase {
             try folder.createSubfolder(named: "2")
             try folder.createSubfolder(named: "3")
             
-            XCTAssertEqual(folder.subfolders.names.sorted(), ["1", "2", "3"])
-            XCTAssertEqual(folder.subfolders.count, 3)
+            XCTAssertEqual(folder.subfolders.names(), ["1", "2", "3"])
+            XCTAssertEqual(folder.subfolders.count(), 3)
         }
     }
     
@@ -373,9 +439,9 @@ class FilesTests: XCTestCase {
             try subfolder2.createSubfolder(named: "2B")
             
             let expectedNames = ["1", "1A", "1B", "2", "2A", "2B"]
-            let sequence = folder.makeSubfolderSequence(recursive: true)
-            XCTAssertEqual(sequence.names.sorted(), expectedNames)
-            XCTAssertEqual(sequence.count, 6)
+            let sequence = folder.subfolders.recursive
+            XCTAssertEqual(sequence.names().sorted(), expectedNames)
+            XCTAssertEqual(sequence.count(), 6)
         }
     }
 
@@ -390,7 +456,7 @@ class FilesTests: XCTestCase {
             try subfolder2.createSubfolder(named: "2A")
             try subfolder2.createSubfolder(named: "2B")
 
-            let sequence = folder.makeSubfolderSequence(recursive: true)
+            let sequence = folder.subfolders.recursive
 
             for folder in sequence {
                 try folder.rename(to: "Folder " + folder.name)
@@ -398,8 +464,8 @@ class FilesTests: XCTestCase {
 
             let expectedNames = ["Folder 1", "Folder 1A", "Folder 1B", "Folder 2", "Folder 2A", "Folder 2B"]
 
-            XCTAssertEqual(sequence.names.sorted(), expectedNames)
-            XCTAssertEqual(sequence.count, 6)
+            XCTAssertEqual(sequence.names().sorted(), expectedNames)
+            XCTAssertEqual(sequence.count(), 6)
         }
     }
     
@@ -410,7 +476,7 @@ class FilesTests: XCTestCase {
             try folder.createFile(named: "C")
             
             XCTAssertEqual(folder.files.first?.name, "A")
-            XCTAssertEqual(folder.files.last?.name, "C")
+            XCTAssertEqual(folder.files.last()?.name, "C")
         }
     }
 
@@ -422,7 +488,7 @@ class FilesTests: XCTestCase {
             let subfolder = try folder.createSubfolder(named: "1")
             try subfolder.createFile(named: "1A")
 
-            let names = folder.files.recursive.names
+            let names = folder.files.recursive.names()
             XCTAssertEqual(names, ["A", "B", "1A"])
         }
     }
@@ -430,10 +496,10 @@ class FilesTests: XCTestCase {
     func testModificationDate() {
         performTest {
             let subfolder = try folder.createSubfolder(named: "Folder")
-            XCTAssertTrue(Calendar.current.isDateInToday(subfolder.modificationDate))
+            XCTAssertTrue(subfolder.modificationDate.map(Calendar.current.isDateInToday) ?? false)
 
             let file = try folder.createFile(named: "File")
-            XCTAssertTrue(Calendar.current.isDateInToday(file.modificationDate))
+            XCTAssertTrue(file.modificationDate.map(Calendar.current.isDateInToday) ?? false)
         }
     }
     
@@ -455,7 +521,7 @@ class FilesTests: XCTestCase {
     
     func testOpeningFileWithEmptyPathThrows() {
         performTest {
-            try assert(File(path: ""), throwsError: File.PathError.empty)
+            try assert(File(path: ""), throwsErrorOfType: LocationError.self)
         }
     }
     
@@ -463,7 +529,7 @@ class FilesTests: XCTestCase {
         performTest {
             let file = try folder.createFile(named: "file")
             try file.delete()
-            try assert(file.delete(), throwsError: File.OperationError.deleteFailed(file))
+            try assert(file.delete(), throwsErrorOfType: LocationError.self)
         }
     }
     
@@ -473,7 +539,7 @@ class FilesTests: XCTestCase {
             try XCTAssertEqual(file.read(), Data())
             
             let data = "New content".data(using: .utf8)!
-            try file.write(data: data)
+            try file.write(data)
             try XCTAssertEqual(file.read(), data)
         }
     }
@@ -483,7 +549,7 @@ class FilesTests: XCTestCase {
             let file = try folder.createFile(named: "file")
             try XCTAssertEqual(file.read(), Data())
             
-            try file.write(string: "New content")
+            try file.write("New content")
             try XCTAssertEqual(file.read(), "New content".data(using: .utf8))
         }
     }
@@ -492,10 +558,10 @@ class FilesTests: XCTestCase {
         performTest {
             let file = try folder.createFile(named: "file")
             let data = "Old content\n".data(using: .utf8)!
-            try file.write(data: data)
+            try file.write(data)
 
             let newData = "I'm the appended content 💯\n".data(using: .utf8)!
-            try file.append(data: newData)
+            try file.append(newData)
             try XCTAssertEqual(file.read(), "Old content\nI'm the appended content 💯\n".data(using: .utf8))
         }
     }
@@ -503,10 +569,10 @@ class FilesTests: XCTestCase {
     func testAppendingStringToFile() {
         performTest {
             let file = try folder.createFile(named: "file")
-            try file.write(string: "Old content\n")
+            try file.write("Old content\n")
 
             let newString = "I'm the appended content 💯\n"
-            try file.append(string: newString)
+            try file.append(newString)
             try XCTAssertEqual(file.read(), "Old content\nI'm the appended content 💯\n".data(using: .utf8))
         }
     }
@@ -549,16 +615,16 @@ class FilesTests: XCTestCase {
             try parentFolder.createFile(named: "fileA")
             try parentFolder.createFile(named: "fileB")
 
-            XCTAssertEqual(parentFolder.subfolders.names, ["folderA", "folderB"])
-            XCTAssertEqual(parentFolder.files.names, ["fileA", "fileB"])
+            XCTAssertEqual(parentFolder.subfolders.names(), ["folderA", "folderB"])
+            XCTAssertEqual(parentFolder.files.names(), ["fileA", "fileB"])
 
             let newParentFolder = try folder.createSubfolder(named: "parentB")
             try parentFolder.moveContents(to: newParentFolder)
 
-            XCTAssertEqual(parentFolder.subfolders.names, [])
-            XCTAssertEqual(parentFolder.files.names, [])
-            XCTAssertEqual(newParentFolder.subfolders.names, ["folderA", "folderB"])
-            XCTAssertEqual(newParentFolder.files.names, ["fileA", "fileB"])
+            XCTAssertEqual(parentFolder.subfolders.names(), [])
+            XCTAssertEqual(parentFolder.files.names(), [])
+            XCTAssertEqual(newParentFolder.subfolders.names(), ["folderA", "folderB"])
+            XCTAssertEqual(newParentFolder.files.names(), ["fileA", "fileB"])
         }
     }
     
@@ -568,21 +634,20 @@ class FilesTests: XCTestCase {
             try parentFolder.createFile(named: ".hidden")
             try parentFolder.createSubfolder(named: ".folder")
             
-            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
-            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+            XCTAssertEqual(parentFolder.files.includingHidden.names(), [".hidden"])
+            XCTAssertEqual(parentFolder.subfolders.includingHidden.names(), [".folder"])
             
             let newParentFolder = try folder.createSubfolder(named: "parentB")
             try parentFolder.moveContents(to: newParentFolder, includeHidden: true)
             
-            XCTAssertEqual(parentFolder.makeFileSequence(includeHidden: true).names, [])
-            XCTAssertEqual(parentFolder.makeSubfolderSequence(includeHidden: true).names, [])
-            XCTAssertEqual(newParentFolder.makeFileSequence(includeHidden: true).names, [".hidden"])
-            XCTAssertEqual(newParentFolder.makeSubfolderSequence(includeHidden: true).names, [".folder"])
+            XCTAssertEqual(parentFolder.files.includingHidden.names(), [])
+            XCTAssertEqual(parentFolder.subfolders.includingHidden.names(), [])
+            XCTAssertEqual(newParentFolder.files.includingHidden.names(), [".hidden"])
+            XCTAssertEqual(newParentFolder.subfolders.includingHidden.names(), [".folder"])
         }
     }
 
     func testAccessingHomeFolder() {
-        XCTAssertNotNil(FileSystem().homeFolder)
         XCTAssertNotNil(Folder.home)
     }
 
@@ -590,7 +655,6 @@ class FilesTests: XCTestCase {
         performTest {
             let folder = try Folder(path: "")
             XCTAssertEqual(FileManager.default.currentDirectoryPath + "/", folder.path)
-            XCTAssertEqual(FileSystem().currentFolder, folder)
             XCTAssertEqual(Folder.current, folder)
         }
     }
@@ -623,52 +687,6 @@ class FilesTests: XCTestCase {
         }
     }
 
-    func testCreatingFileFromFileSystem() {
-        performTest {
-            let fileName = "three"
-            let filePath = folder.path + "one/two/\(fileName)"
-            let contents = Data()
-            let file = try FileSystem().createFile(at: filePath, contents: contents)
-
-            XCTAssertEqual(file.name, fileName)
-            XCTAssertEqual(file.path, filePath)
-
-            try XCTAssertEqual(File(path: filePath).read(), contents)
-        }
-    }
-
-    func testCreateFileFromFileSystemIfNeeded() {
-        performTest {
-            let path = folder.path + "one/two/three/file"
-            let contentA = "Hello".data(using: .utf8)!
-            let contentB = "World".data(using: .utf8)!
-            let fileA = try FileSystem().createFileIfNeeded(at: path, contents: contentA)
-            let fileB = try FileSystem().createFileIfNeeded(at: path, contents: contentB)
-
-            try XCTAssertEqual(fileA.readAsString(), "Hello")
-            try XCTAssertEqual(fileA.read(), fileB.read())
-        }
-    }
-
-    func testCreatingFolderFromFileSystem() {
-        performTest {
-            let folderPath = folder.path + "one/two/three"
-            try FileSystem().createFolder(at: folderPath)
-            _ = try Folder(path: folderPath)
-        }
-    }
-
-    func testCreatingFolderWithTildePathFromFileSystem() {
-        performTest {
-            let fileSystem = FileSystem()
-            try fileSystem.createFolder(at: "~/.filesTestFolder")
-            let createdFolder = try fileSystem.homeFolder.subfolder(named: ".filesTestFolder")
-
-            // Cleanup since we're performing a test in the actual home folder
-            try createdFolder.delete()
-        }
-    }
-
     func testCreateFileIfNeeded() {
         performTest {
             let fileA = try folder.createFileIfNeeded(withName: "file", contents: "Hello".data(using: .utf8)!)
@@ -680,11 +698,11 @@ class FilesTests: XCTestCase {
 
     func testCreateFolderIfNeeded() {
         performTest {
-            let subfolderA = try FileSystem().createFolderIfNeeded(at: folder.path + "one/two/three")
+            let subfolderA = try folder.createSubfolderIfNeeded(withName: "Subfolder")
             try subfolderA.createFile(named: "file")
-            let subfolderB = try FileSystem().createFolderIfNeeded(at: subfolderA.path)
+            let subfolderB = try folder.createSubfolderIfNeeded(withName: subfolderA.name)
             XCTAssertEqual(subfolderA, subfolderB)
-            XCTAssertEqual(subfolderA.files.count, subfolderB.files.count)
+            XCTAssertEqual(subfolderA.files.count(), subfolderB.files.count())
             XCTAssertEqual(subfolderA.files.first, subfolderB.files.first)
         }
     }
@@ -695,14 +713,14 @@ class FilesTests: XCTestCase {
             try subfolderA.createFile(named: "file")
             let subfolderB = try folder.createSubfolderIfNeeded(withName: "folder")
             XCTAssertEqual(subfolderA, subfolderB)
-            XCTAssertEqual(subfolderA.files.count, subfolderB.files.count)
+            XCTAssertEqual(subfolderA.files.count(), subfolderB.files.count())
             XCTAssertEqual(subfolderA.files.first, subfolderB.files.first)
         }
     }
     
     func testCreatingFileWithString() {
         performTest {
-            let file = try folder.createFile(named: "file", contents: "Hello world")
+            let file = try folder.createFile(named: "file", contents: Data("Hello world".utf8))
             XCTAssertEqual(try file.readAsString(), "Hello world")
         }
     }
@@ -722,14 +740,13 @@ class FilesTests: XCTestCase {
         
         performTest {
             let fileManager = FileManagerMock()
-            let fileSystem = FileSystem(using: fileManager)
-            let subfolder = try fileSystem.temporaryFolder.createSubfolder(named: UUID().uuidString)
+            let subfolder = try folder.managedBy(fileManager).createSubfolder(named: UUID().uuidString)
             let file = try subfolder.createFile(named: "file")
             try XCTAssertEqual(file.read(), Data())
         
             // Mock that no files exist, which should call file lookups to fail
             fileManager.noFilesExist = true
-            try assert(subfolder.file(named: "file"), throwsError: File.PathError.invalid(file.path))
+            try assert(subfolder.file(named: "file"), throwsErrorOfType: LocationError.self)
         }
     }
 
@@ -754,6 +771,28 @@ class FilesTests: XCTestCase {
             XCTAssertTrue(folder.contains(subfolderB))
         }
     }
+
+    func testErrorDescriptions() {
+        let missingError = FilesError(
+            path: "/some/path",
+            reason: LocationErrorReason.missing
+        )
+
+        XCTAssertEqual(missingError.description, """
+        Files encounted an error at '/some/path'.
+        Reason: missing
+        """)
+
+        let encodingError = FilesError(
+            path: "/some/path",
+            reason: WriteErrorReason.stringEncodingFailed("Hello")
+        )
+
+        XCTAssertEqual(encodingError.description, """
+        Files encounted an error at '/some/path'.
+        Reason: stringEncodingFailed(\"Hello\")
+        """)
+    }
     
     // MARK: - Utilities
     
@@ -766,14 +805,13 @@ class FilesTests: XCTestCase {
         }
     }
     
-    private func assert<T, E: Error>(_ expression: @autoclosure () throws -> T, throwsError expectedError: E) where E: Equatable {
+    private func assert<T, E: Error>(_ expression: @autoclosure () throws -> T,
+                                     throwsErrorOfType expectedError: E.Type) {
         do {
             _ = try expression()
             XCTFail("Expected error to be thrown")
-        } catch let error as E {
-            XCTAssertEqual(error, expectedError)
         } catch {
-            XCTFail("Unexpected error type: \(type(of: error))")
+            XCTAssertTrue(error is E)
         }
     }
     
@@ -781,7 +819,11 @@ class FilesTests: XCTestCase {
     
     static var allTests = [
         ("testCreatingAndDeletingFile", testCreatingAndDeletingFile),
+        ("testCreatingFileAtPath", testCreatingFileAtPath),
+        ("testDroppingLeadingSlashWhenCreatingFileAtPath", testDroppingLeadingSlashWhenCreatingFileAtPath),
         ("testCreatingAndDeletingFolder", testCreatingAndDeletingFolder),
+        ("testCreatingSubfolderAtPath", testCreatingSubfolderAtPath),
+        ("testDroppingLeadingSlashWhenCreatingSubfolderAtPath", testDroppingLeadingSlashWhenCreatingSubfolderAtPath),
         ("testReadingFileAsString", testReadingFileAsString),
         ("testReadingFileAsInt", testReadingFileAsInt),
         ("testRenamingFile", testRenamingFile),
@@ -826,28 +868,25 @@ class FilesTests: XCTestCase {
         ("testNameExcludingExtensionWithLongFileName", testNameExcludingExtensionWithLongFileName),
         ("testRelativePaths", testRelativePaths),
         ("testRelativePathIsAbsolutePathForNonParent", testRelativePathIsAbsolutePathForNonParent),
-        ("testCreatingFileFromFileSystem", testCreatingFileFromFileSystem),
-        ("testCreateFileFromFileSystemIfNeeded", testCreateFileFromFileSystemIfNeeded),
-        ("testCreatingFolderFromFileSystem", testCreatingFolderFromFileSystem),
-        ("testCreatingFolderWithTildePathFromFileSystem", testCreatingFolderWithTildePathFromFileSystem),
         ("testCreateFileIfNeeded", testCreateFileIfNeeded),
         ("testCreateFolderIfNeeded", testCreateFolderIfNeeded),
         ("testCreateSubfolderIfNeeded", testCreateSubfolderIfNeeded),
         ("testCreatingFileWithString", testCreatingFileWithString),
         ("testUsingCustomFileManager", testUsingCustomFileManager),
         ("testFolderContainsFile", testFolderContainsFile),
-        ("testFolderContainsSubfolder", testFolderContainsSubfolder)
+        ("testFolderContainsSubfolder", testFolderContainsSubfolder),
+        ("testErrorDescriptions", testErrorDescriptions)
     ]
 }
 
 #if os(macOS)
 extension FilesTests {
     func testAccessingDocumentFolder() {
-        XCTAssertNotNil(FileSystem().documentFolder, "Document folder should be available.")
+        XCTAssertNotNil(Folder.documents, "Document folder should be available.")
     }
     
     func testAccessingLibraryFolder() {
-        XCTAssertNotNil(FileSystem().libraryFolder, "Library folder should be available.")
+        XCTAssertNotNil(Folder.library, "Library folder should be available.")
     }
 }
 #endif
