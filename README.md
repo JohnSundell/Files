@@ -50,7 +50,7 @@ try Folder(path: "MyFolder").files.enumerated().forEach { (index, file) in
 Recursively iterate over all folders in a tree:
 
 ```swift
-Folder.home.subfolders.recrusive.forEach { folder in
+Folder.home.subfolders.recursive.forEach { folder in
     print("Name : \(folder.name), parent: \(folder.parent)")
 }
 ```
