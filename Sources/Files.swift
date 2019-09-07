@@ -205,7 +205,10 @@ public final class Storage<LocationType: Location> {
 
     private func validatePath() throws {
         switch LocationType.kind {
-        case .file: break
+        case .file:
+            guard !path.isEmpty else {
+                throw LocationError(path: path, reason: .emptyFilePath)
+            }
         case .folder:
             if path.isEmpty { path = fileManager.currentDirectoryPath }
             if !path.hasSuffix("/") { path += "/" }
@@ -255,7 +258,6 @@ fileprivate extension Storage {
                 path = newPath
             case .folder:
                 path = newPath.appendingSuffixIfNeeded("/")
-                print(path)
             }
         } catch {
             throw LocationError(path: path, reason: errorReasonProvider(error))
@@ -904,6 +906,8 @@ extension FilesError: CustomStringConvertible {
 public enum LocationErrorReason {
     /// The location couldn't be found.
     case missing
+    /// An empty path was given when refering to a file.
+    case emptyFilePath
     /// The user attempted to rename the file system's root folder.
     case cannotRenameRoot
     /// A rename operation failed with an underlying system error.

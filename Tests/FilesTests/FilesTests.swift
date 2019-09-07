@@ -459,7 +459,6 @@ class FilesTests: XCTestCase {
             let sequence = folder.subfolders.recursive
 
             for folder in sequence {
-                print(folder.name)
                 try folder.rename(to: "Folder " + folder.name)
             }
 
