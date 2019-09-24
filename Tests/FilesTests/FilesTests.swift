@@ -332,10 +332,11 @@ class FilesTests: XCTestCase {
             try file.write("content")
             
             let subfolder = try folder.createSubfolder(named: "folder")
-            try file.copy(to: subfolder)
+            let copiedFile = try file.copy(to: subfolder)
             try XCTAssertNotNil(folder.file(named: "A"))
             try XCTAssertNotNil(subfolder.file(named: "A"))
             try XCTAssertEqual(file.read(), subfolder.file(named: "A").read())
+            try XCTAssertEqual(copiedFile, subfolder.file(named: "A"))
             XCTAssertEqual(folder.files.count(), 1)
         }
     }
@@ -357,9 +358,10 @@ class FilesTests: XCTestCase {
             let copyingFolder = try folder.createSubfolder(named: "A")
             
             let subfolder = try folder.createSubfolder(named: "folder")
-            try copyingFolder.copy(to: subfolder)
+            let copiedFolder = try copyingFolder.copy(to: subfolder)
             XCTAssertTrue(folder.containsSubfolder(named: "A"))
             XCTAssertTrue(subfolder.containsSubfolder(named: "A"))
+            XCTAssertEqual(copiedFolder, try subfolder.subfolder(named: "A"))
             XCTAssertEqual(folder.subfolders.count(), 2)
             XCTAssertEqual(subfolder.subfolders.count(), 1)
         }

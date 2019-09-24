@@ -165,8 +165,12 @@ public extension Location {
     /// Copy the contents of this location to a given folder
     /// - parameter newParent: The folder to copy this item to.
     /// - throws: `LocationError` if the location couldn't be copied.
-    func copy(to folder: Folder) throws {
-        try storage.copy(to: folder.path + name)
+    /// - returns: The new, copied location.
+    @discardableResult
+    func copy(to folder: Folder) throws -> Self {
+        let path = folder.path + name
+        try storage.copy(to: path)
+        return try Self(path: path)
     }
 
     /// Delete this location. It will be permanently deleted. Use with caution.
