@@ -988,3 +988,49 @@ private extension String {
         return appending(suffix)
     }
 }
+
+// MARK: - Static creation methods
+
+public extension Folder {
+    
+    /// Create a new folder at a given path. In case
+    /// the intermediate folders don't exist,
+    /// those will be created as well. This method throws an error
+    /// if a folder already exists at the given path.
+    /// - parameter path: The absolute path of the folder.
+    /// - throws:
+    ///     - `WriteError` if the operation couldn't be completed.
+    ///     - `LocationError` if path format was incorrect.
+    static func create(at path: String) throws -> Folder {
+        var destination = URL(fileURLWithPath: path).pathComponents
+        
+        guard !destination.isEmpty
+        else { throw LocationError.init(path: path, reason: .emptyFilePath) }
+        
+        let folder = try Folder(path: destination.removeFirst())
+        return try destination.reduce(into: folder) {
+            $0 = try $0.createSubfolder(named: $1)
+        }
+    }
+    
+    /// Create a new folder at a given path. In case
+    /// the intermediate folders don't exist,
+    /// those will be created as well. If a folder already exists at
+    /// the given path, then it will be returned without modification.
+    /// - parameter path: The absolute path of the folder.
+    /// - throws:
+    ///     - `WriteError` if the operation couldn't be completed.
+    ///     - `LocationError` if path format was incorrect.
+    static func createIfNeeded(at path: String) throws -> Folder {
+        var destination = URL(fileURLWithPath: path).pathComponents
+        
+        guard !destination.isEmpty
+        else { throw LocationError.init(path: path, reason: .emptyFilePath) }
+        
+        let folder = try Folder(path: destination.removeFirst())
+        return try destination.reduce(into: folder) {
+            $0 = try $0.createSubfolderIfNeeded(withName: $1)
+        }
+    }
+    
+}
