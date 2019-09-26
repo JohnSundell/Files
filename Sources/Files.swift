@@ -809,7 +809,7 @@ public extension Folder {
     @discardableResult
     func createFileIfNeeded(at path: String,
                             contents: @autoclosure () -> Data? = nil) throws -> File {
-        return try (try? file(at: path)) ?? createFile(at: path)
+        return try (try? file(at: path)) ?? createFile(at: path, contents: contents())
     }
 
     /// Create a new file with a given name. If a file with the given
@@ -860,6 +860,87 @@ public extension Folder {
         try folders.delete()
     }
 }
+
+// MARK: - Static creation methods
+
+public extension Folder {
+    
+    /// Create a new folder at a given path. In case
+    /// the intermediate folders don't exist,
+    /// those will be created as well. This method throws an error
+    /// if a folder already exists at the given path.
+    /// - parameter path: The absolute path of the folder.
+    /// - throws: - `WriteError` if the operation couldn't be completed.
+    static func create(at path: String) throws -> Folder {
+        let destination = URL(fileURLWithPath: path).absoluteURL
+        
+        guard let root = destination.pathComponents.first
+        else { throw WriteError.init(path: path, reason: .emptyPath) }
+        
+        return try Folder(path: root)
+            .createSubfolder(at: destination.path)
+    }
+    
+    /// Create a new folder at a given path. In case
+    /// the intermediate folders don't exist,
+    /// those will be created as well. If a folder already exists at
+    /// the given path, then it will be returned without modification.
+    /// - parameter path: The absolute path of the folder.
+    /// - throws: `WriteError` if the operation couldn't be completed.
+    static func createIfNeeded(at path: String) throws -> Folder {
+        let destination = URL(fileURLWithPath: path).absoluteURL
+        
+        guard let root = destination.pathComponents.first
+        else { throw WriteError.init(path: path, reason: .emptyPath) }
+        
+        return try Folder(path: root)
+            .createSubfolderIfNeeded(at: destination.path)
+    }
+    
+}
+
+public extension File {
+    
+    /// Create a new file at a given path within this folder. In case
+    /// the intermediate folders between this folder and the new file don't
+    /// exist, those will be created as well. This method throws an error
+    /// if a file already exists at the given path.
+    /// - parameter path: The relative path of the file to create.
+    /// - parameter contents: The initial `Data` that the file should contain.
+    /// - throws: `WriteError` if the operation couldn't be completed.
+    static func create(at path: String,
+                       contents: @autoclosure () -> Data? = nil) throws -> File {
+        let destination = URL(fileURLWithPath: path).absoluteURL
+        
+        guard let root = destination.pathComponents.first
+        else { throw WriteError.init(path: path, reason: .emptyPath) }
+        
+        return try Folder(path: root)
+            .createFile(at: destination.path, contents: contents())
+    }
+    
+    /// Create a new file at a given path within this folder. In case
+    /// the intermediate folders between this folder and the new file don't
+    /// exist, those will be created as well. If a file already exists at
+    /// the given path, then it will be returned without modification.
+    /// - parameter path: The relative path of the file.
+    /// - parameter contents: The initial `Data` that any newly created file
+    ///   should contain. Will only be evaluated if needed.
+    /// - throws: `WriteError` if a new file couldn't be created.
+    static func createIfNeeded(at path: String,
+                               contents: @autoclosure () -> Data? = nil) throws -> File {
+        let destination = URL(fileURLWithPath: path).absoluteURL
+        
+        guard let root = destination.pathComponents.first
+        else { throw WriteError.init(path: path, reason: .emptyPath) }
+        
+        return try Folder(path: root)
+            .createFileIfNeeded(at: destination.path, contents: contents())
+    }
+    
+}
+
+// MARK: - OSX static properties.
 
 #if os(macOS)
 public extension Folder {
@@ -987,83 +1068,4 @@ private extension String {
         guard !hasSuffix(suffix) else { return self }
         return appending(suffix)
     }
-}
-
-// MARK: - Static creation methods
-
-public extension Folder {
-    
-    /// Create a new folder at a given path. In case
-    /// the intermediate folders don't exist,
-    /// those will be created as well. This method throws an error
-    /// if a folder already exists at the given path.
-    /// - parameter path: The absolute path of the folder.
-    /// - throws: - `WriteError` if the operation couldn't be completed.
-    static func create(at path: String) throws -> Folder {
-        let destination = URL(fileURLWithPath: path).absoluteURL
-        
-        guard let root = destination.pathComponents.first
-        else { throw WriteError.init(path: path, reason: .emptyPath) }
-        
-        return try Folder(path: root)
-            .createSubfolder(at: destination.path)
-    }
-    
-    /// Create a new folder at a given path. In case
-    /// the intermediate folders don't exist,
-    /// those will be created as well. If a folder already exists at
-    /// the given path, then it will be returned without modification.
-    /// - parameter path: The absolute path of the folder.
-    /// - throws: `WriteError` if the operation couldn't be completed.
-    static func createIfNeeded(at path: String) throws -> Folder {
-        let destination = URL(fileURLWithPath: path).absoluteURL
-        
-        guard let root = destination.pathComponents.first
-        else { throw WriteError.init(path: path, reason: .emptyPath) }
-        
-        return try Folder(path: root)
-            .createSubfolderIfNeeded(at: destination.path)
-    }
-    
-}
-
-public extension File {
-    
-    /// Create a new file at a given path within this folder. In case
-    /// the intermediate folders between this folder and the new file don't
-    /// exist, those will be created as well. This method throws an error
-    /// if a file already exists at the given path.
-    /// - parameter path: The relative path of the file to create.
-    /// - parameter contents: The initial `Data` that the file should contain.
-    /// - throws: `WriteError` if the operation couldn't be completed.
-    static func create(at path: String,
-                       contents: @autoclosure () -> Data? = nil) throws -> File {
-        let destination = URL(fileURLWithPath: path).absoluteURL
-        
-        guard let root = destination.pathComponents.first
-        else { throw WriteError.init(path: path, reason: .emptyPath) }
-        
-        return try Folder(path: root)
-            .createFile(at: destination.path, contents: contents())
-    }
-    
-    /// Create a new file at a given path within this folder. In case
-    /// the intermediate folders between this folder and the new file don't
-    /// exist, those will be created as well. If a file already exists at
-    /// the given path, then it will be returned without modification.
-    /// - parameter path: The relative path of the file.
-    /// - parameter contents: The initial `Data` that any newly created file
-    ///   should contain. Will only be evaluated if needed.
-    /// - throws: `WriteError` if a new file couldn't be created.
-    static func createIfNeeded(at path: String,
-                               contents: @autoclosure () -> Data? = nil) throws -> File {
-        let destination = URL(fileURLWithPath: path).absoluteURL
-        
-        guard let root = destination.pathComponents.first
-        else { throw WriteError.init(path: path, reason: .emptyPath) }
-        
-        return try Folder(path: root)
-            .createFileIfNeeded(at: destination.path, contents: contents())
-    }
-    
 }
