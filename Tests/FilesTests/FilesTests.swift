@@ -87,6 +87,22 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testCreatingFileIfNeededAtPath() {
+        performTest {
+            let path = "a/b/c.txt"
+
+            XCTAssertFalse(folder.containsFile(at: path))
+            var file = try folder.createFileIfNeeded(at: path, contents: Data("Hello".utf8))
+
+            XCTAssertTrue(folder.containsFile(at: path))
+            XCTAssertTrue(folder.containsSubfolder(named: "a"))
+            XCTAssertTrue(folder.containsSubfolder(at: "a/b"))
+
+            file = try folder.createFileIfNeeded(at: path, contents: Data())
+            XCTAssertEqual(try file.readAsString(), "Hello")
+        }
+    }
+
     func testDroppingLeadingSlashWhenCreatingFileAtPath() {
         performTest {
             let path = "/a/b/c.txt"

@@ -809,7 +809,7 @@ public extension Folder {
     @discardableResult
     func createFileIfNeeded(at path: String,
                             contents: @autoclosure () -> Data? = nil) throws -> File {
-        return try (try? file(at: path)) ?? createFile(at: path)
+        return try (try? file(at: path)) ?? createFile(at: path, contents: contents())
     }
 
     /// Create a new file with a given name. If a file with the given
