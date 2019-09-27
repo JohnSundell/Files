@@ -537,6 +537,14 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testRootSubfolderParentIsRoot() {
+        performTest {
+            let rootFolder = try Folder(path: "/")
+            let subfolder = rootFolder.subfolders.first
+            XCTAssertEqual(subfolder?.parent, rootFolder)
+        }
+    }
+    
     func testOpeningFileWithEmptyPathThrows() {
         performTest {
             try assert(File(path: ""), throwsErrorOfType: LocationError.self)
@@ -869,6 +877,7 @@ class FilesTests: XCTestCase {
         ("testModificationDate", testModificationDate),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),
+        ("testRootSubfolderParentIsRoot", testRootSubfolderParentIsRoot),
         ("testOpeningFileWithEmptyPathThrows", testOpeningFileWithEmptyPathThrows),
         ("testDeletingNonExistingFileThrows", testDeletingNonExistingFileThrows),
         ("testWritingDataToFile", testWritingDataToFile),

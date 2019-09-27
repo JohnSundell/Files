@@ -249,6 +249,7 @@ fileprivate extension Storage {
         guard path != "/" else { return nil }
         let url = URL(fileURLWithPath: path)
         let components = url.pathComponents.dropFirst().dropLast()
+        guard !components.isEmpty else { return "/" }
         return "/" + components.joined(separator: "/") + "/"
     }
 
