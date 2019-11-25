@@ -862,6 +862,39 @@ public extension Folder {
     }
 }
 
+// MARK: Temporary files and folders
+
+public extension Folder {
+    /// Create a new uniquely-named file within this folder.
+    /// - Parameter prefix: (optional) prefix to add the temporary file name
+    /// - Parameter fileExtension: (optional) file extension (without the `.`) to use for the created file
+    /// - Parameter contents: (optional) the data to write to the file
+    /// - throws: `WriteError` if a new file couldn't be created.
+    func createTemporaryFile(prefix: String? = nil, fileExtension: String? = nil, contents: Data? = nil) throws -> File {
+        var tempFilename = ""
+        if let prefix = prefix {
+            tempFilename += prefix + "_"
+        }
+        tempFilename += ProcessInfo.processInfo.globallyUniqueString
+        if let fileExtension = fileExtension {
+            tempFilename += "." + fileExtension
+        }
+        return try self.createFile(at: tempFilename, contents: contents)
+    }
+
+    /// Create a new uniquely-named folder within this folder.
+    /// - Parameter prefix: (optional) prefix to add the temporary folder name
+    /// - throws: `WriteError` if a new folder couldn't be created.
+    func createTemporarySubfolder(prefix: String? = nil) throws -> Folder {
+        var tempFolderName = ""
+        if let prefix = prefix {
+            tempFolderName += prefix + "_"
+        }
+        tempFolderName += ProcessInfo.processInfo.globallyUniqueString
+        return try self.createSubfolder(named: tempFolderName)
+    }
+}
+
 #if os(macOS)
 public extension Folder {
     /// The current user's Documents folder

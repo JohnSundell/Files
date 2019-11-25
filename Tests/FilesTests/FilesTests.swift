@@ -819,6 +819,36 @@ class FilesTests: XCTestCase {
         Reason: stringEncodingFailed(\"Hello\")
         """)
     }
+
+    func testTemporaryFileFolderCreation() {
+        performTest {
+            // An empty temporary file in the Temporary files location
+            let tempFile1 = try Folder.temporary.createTemporaryFile(prefix: "TestFile", fileExtension: "fred")
+            XCTAssertTrue(Folder.temporary.contains(tempFile1))
+            XCTAssertTrue(tempFile1.name.starts(with: "TestFile_"))
+            XCTAssertEqual("fred", tempFile1.extension)
+            XCTAssertEqual(try tempFile1.read().count, 0)
+            try tempFile1.delete()
+
+            // Temporary file containing some data
+            let tempFile2 = try folder.createTemporaryFile(fileExtension: "extn", contents: Data("Hello".utf8))
+            XCTAssertTrue(folder.contains(tempFile2))
+            XCTAssertFalse(tempFile2.name.contains("_"))
+            XCTAssertEqual("extn", tempFile2.extension)
+            XCTAssertEqual(try tempFile2.readAsString(), "Hello")
+
+            // Simple folder without a prefix.
+            let tempFolder1 = try folder.createTemporarySubfolder()
+            XCTAssertTrue(folder.contains(tempFolder1))
+            XCTAssertFalse(tempFolder1.name.contains("_"))
+
+            // Folder with a prefix
+            let tempFolder2 = try Folder.temporary.createTemporarySubfolder(prefix: "TestFolder")
+            XCTAssertTrue(Folder.temporary.contains(tempFolder2))
+            XCTAssertTrue(tempFolder2.name.starts(with: "TestFolder_"))
+            try tempFolder2.delete()
+        }
+    }
     
     // MARK: - Utilities
     
