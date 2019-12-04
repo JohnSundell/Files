@@ -455,6 +455,19 @@ public extension File {
     }
 }
 
+#if canImport(AppKit)
+
+import AppKit
+
+extension File {
+    /// Open the file.
+    func open() {
+        NSWorkspace.shared.openFile(path)
+    }
+}
+
+#endif
+
 // MARK: - Folders
 
 /// Type that represents a folder on disk. You can either reference an existing
