@@ -459,7 +459,7 @@ public extension File {
 
 import AppKit
 
-extension File {
+public extension File {
     /// Open the file.
     func open() {
         NSWorkspace.shared.openFile(path)
