@@ -192,6 +192,21 @@ public extension Location {
     }
 }
 
+// MARK: - Trash
+
+#if os(macOS)
+public extension Location {
+    /// Move this location to the trash.
+    /// - throws: `LocationError` if the item couldn't be moved to the trash.
+    /// - returns: The resulting location for the trashed item
+    @discardableResult
+    func trash() throws -> Self {
+        let result = try storage.trash()
+        return try Self(path: result.path)
+    }
+}
+#endif
+
 // MARK: - Storage
 
 /// Type used to store information about a given file system location. You don't
@@ -285,6 +300,24 @@ fileprivate extension Storage {
         }
     }
 }
+
+#if os(macOS)
+fileprivate extension Storage {
+    func trash() throws -> URL {
+        do {
+            let url = URL(fileURLWithPath: path)
+            var resultingURL: NSURL?
+            try fileManager.trashItem(at: url, resultingItemURL: &resultingURL)
+            guard let resultURL = resultingURL else {
+                throw LocationError(path: path, reason: .trashFailed(nil))
+            }
+            return resultURL as URL
+        } catch {
+            throw LocationError(path: path, reason: .trashFailed(error))
+        }
+    }
+}
+#endif
 
 private extension Storage where LocationType == Folder {
     func makeChildSequence<T: Location>() -> Folder.ChildSequence<T> {
@@ -936,6 +969,8 @@ public enum LocationErrorReason {
     case copyFailed(Error)
     /// A delete operation failed with an underlying system error.
     case deleteFailed(Error)
+    /// A trash operation failed with an optional underlying system error.
+    case trashFailed(Error?)
 }
 
 /// Enum listing reasons that a write operation could fail.

@@ -917,3 +917,36 @@ extension FilesTests {
     }
 }
 #endif
+
+#if os(macOS)
+extension FilesTests {
+    func testTrashFile() {
+        performTest {
+            // Check file trash
+            let tempFile1 = try folder.createFile(named: "temporaryFile")
+            let trashedFile = try tempFile1.trash()
+
+            XCTAssertTrue(FileManager.default.fileExists(atPath: trashedFile.path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: tempFile1.path))
+
+            // Put back
+            try trashedFile.move(to: tempFile1.parent!)
+        }
+    }
+
+    func testTrashFolder() {
+        performTest {
+            // Check folder trash
+            let tempFolder = try folder.createSubfolder(at: "temporaryFolder")
+            _ = try tempFolder.createFile(named: "item")
+            let trashedItem = try tempFolder.trash()
+
+            XCTAssertTrue(FileManager.default.fileExists(atPath: trashedItem.path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: tempFolder.path))
+
+            // Put back
+            try trashedItem.move(to: tempFolder.parent!)
+        }
+    }
+}
+#endif
