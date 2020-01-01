@@ -692,6 +692,16 @@ class FilesTests: XCTestCase {
         }
     }
 
+    func testNameExcludingExtensionWithoutExtension() {
+        performTest {
+            let file = try folder.createFile(named: "File")
+            let subfolder = try folder.createSubfolder(named: "Subfolder")
+
+            XCTAssertEqual(file.nameExcludingExtension, "File")
+            XCTAssertEqual(subfolder.nameExcludingExtension, "Subfolder")
+        }
+    }
+
     func testRelativePaths() {
         performTest {
             let file = try folder.createFile(named: "FileA")
