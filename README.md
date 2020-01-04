@@ -60,7 +60,7 @@ Create, write and delete files and folders:
 ```swift
 let folder = try Folder(path: "/users/john/folder")
 let file = try folder.createFile(named: "file.json")
-try file.write(string: "{\"hello\": \"world\"}")
+try file.write("{\"hello\": \"world\"}")
 try file.delete()
 try folder.delete()
 ```
