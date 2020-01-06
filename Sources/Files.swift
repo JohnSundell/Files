@@ -457,7 +457,7 @@ public extension File {
     }
 }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 
 import AppKit
 
