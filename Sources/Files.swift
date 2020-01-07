@@ -204,7 +204,7 @@ public final class Storage<LocationType: Location> {
     private let fileManager: FileManager
 
     fileprivate init(path: String, fileManager: FileManager) throws {
-        self.path = path
+        self.path = path.replacingOccurrences(of: "file://", with: "")
         self.fileManager = fileManager
         try validatePath()
     }
@@ -974,10 +974,14 @@ public typealias ReadError = FilesError<ReadErrorReason>
 // MARK: - Private system extensions
 
 private extension FileManager {
+
     func locationExists(at path: String, kind: LocationKind) -> Bool {
         var isFolder: ObjCBool = false
 
-        guard fileExists(atPath: path, isDirectory: &isFolder) else {
+        guard let decoded = path.removingPercentEncoding else {
+            return false
+        }
+        guard fileExists(atPath: decoded, isDirectory: &isFolder) else {
             return false
         }
 
