@@ -815,7 +815,7 @@ class FilesTests: XCTestCase {
         )
 
         XCTAssertEqual(missingError.description, """
-        Files encounted an error at '/some/path'.
+        Files encountered an error at '/some/path'.
         Reason: missing
         """)
 
@@ -825,7 +825,7 @@ class FilesTests: XCTestCase {
         )
 
         XCTAssertEqual(encodingError.description, """
-        Files encounted an error at '/some/path'.
+        Files encountered an error at '/some/path'.
         Reason: stringEncodingFailed(\"Hello\")
         """)
     }
