@@ -55,6 +55,7 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(file.path, folder.path + "test.txt")
             XCTAssertEqual(file.extension, "txt")
             XCTAssertEqual(file.nameExcludingExtension, "test")
+			XCTAssertEqual(file.size, 0)
             try XCTAssertEqual(file.read(), Data())
             
             // You should now be able to access the file using its path and through the parent
@@ -577,6 +578,7 @@ class FilesTests: XCTestCase {
             
             try file.write("New content")
             try XCTAssertEqual(file.read(), "New content".data(using: .utf8))
+			XCTAssertEqual(file.size, 11)
         }
     }
 

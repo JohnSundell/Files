@@ -374,6 +374,11 @@ public extension File {
     static var kind: LocationKind {
         return .file
     }
+	
+	/// The size of the file, in bytes.
+	var size: Int {
+		try! FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int ?? 0
+	}
 
     /// Write a new set of binary data into the file, replacing its current contents.
     /// - parameter data: The binary data to write.
