@@ -377,7 +377,7 @@ public extension File {
 	
 	/// The size of the file, in bytes.
 	var size: Int {
-		try! FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int ?? 0
+		return try! FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int ?? 0
 	}
 
     /// Write a new set of binary data into the file, replacing its current contents.
