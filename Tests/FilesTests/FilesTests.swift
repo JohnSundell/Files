@@ -328,6 +328,26 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCheckingEmptyFolders() {
+        performTest {
+            let emptySubfolder = try folder.createSubfolder(named: "1")
+            XCTAssertTrue(emptySubfolder.isEmpty())
+            
+            let subfolderWithFile = try folder.createSubfolder(named: "2")
+            try subfolderWithFile.createFile(named: "A")
+            XCTAssertFalse(subfolderWithFile.isEmpty())
+            
+            let subfolderWithHiddenFile = try folder.createSubfolder(named: "3")
+            try subfolderWithHiddenFile.createFile(named: ".B")
+            XCTAssertTrue(subfolderWithHiddenFile.isEmpty())
+            XCTAssertFalse(subfolderWithHiddenFile.isEmpty(includingHidden: true))
+            
+            let subfolderWithFolder = try folder.createSubfolder(named: "3")
+            try subfolderWithFolder.createSubfolder(named: "4")
+            XCTAssertFalse(subfolderWithFile.isEmpty())
+        }
+    }
+
     func testMovingFiles() {
         performTest {
             try folder.createFile(named: "A")
@@ -873,6 +893,7 @@ class FilesTests: XCTestCase {
         ("testAccessingSubfolderByPath", testAccessingSubfolderByPath),
         ("testEmptyingFolder", testEmptyingFolder),
         ("testEmptyingFolderWithHiddenFiles", testEmptyingFolderWithHiddenFiles),
+        ("testCheckingEmptyFolders", testCheckingEmptyFolders),
         ("testMovingFiles", testMovingFiles),
         ("testCopyingFiles", testCopyingFiles),
         ("testCopyingFolders", testCopyingFolders),
