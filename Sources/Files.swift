@@ -688,7 +688,6 @@ public extension Folder {
         return try! Folder(path: NSTemporaryDirectory())
     }
 
-
     /// Resolve a folder that matches a search path within a given domain.
     /// - parameter searchPath: The directory path to search for.
     /// - parameter domain: The domain to search in.
