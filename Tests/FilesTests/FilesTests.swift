@@ -916,6 +916,41 @@ class FilesTests: XCTestCase {
     ]
 }
 
+#if os(iOS) || os(tvOS) || os(macOS)
+extension FilesTests {
+    func testResolvingFolderMatchingSearchPath() {
+        performTest {
+            // Real file I/O
+            XCTAssertNotNil(try Folder.matching(.cachesDirectory))
+            XCTAssertNotNil(try Folder.matching(.libraryDirectory))
+
+            // Mocked file I/O
+            final class FileManagerMock: FileManager {
+                var target: Folder?
+
+                override func urls(
+                    for directory: FileManager.SearchPathDirectory,
+                    in domainMask: FileManager.SearchPathDomainMask
+                ) -> [URL] {
+                    return target.map { [$0.url] } ?? []
+                }
+            }
+
+            let target = try folder.createSubfolder(named: "Target")
+
+            let fileManager = FileManagerMock()
+            fileManager.target = target
+
+            let resolved = try Folder.matching(.documentDirectory,
+                resolvedBy: fileManager
+            )
+
+            XCTAssertEqual(resolved, target)
+        }
+    }
+}
+#endif
+
 #if os(macOS)
 extension FilesTests {
     func testAccessingDocumentFolder() {
