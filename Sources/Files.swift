@@ -941,7 +941,7 @@ public struct FilesError<Reason>: Error {
 extension FilesError: CustomStringConvertible {
     public var description: String {
         return """
-        Files encounted an error at '\(path)'.
+        Files encountered an error at '\(path)'.
         Reason: \(reason)
         """
     }
