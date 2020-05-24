@@ -948,12 +948,13 @@ extension FilesTests {
             XCTAssertEqual(resolved, target)
         }
     }
-}
-#endif
 
-#if os(macOS)
-extension FilesTests {
     func testAccessingDocumentFolder() {
+        #if !os(macOS)
+        // iOS and tvOS are not guaranteed to have a documents directory
+        _ = try? Folder.home.createSubfolder(at: "Documents")
+        #endif
+
         XCTAssertNotNil(Folder.documents, "Document folder should be available.")
     }
     

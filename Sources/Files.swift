@@ -903,11 +903,7 @@ public extension Folder {
             fileManager: fileManager
         ))
     }
-}
-#endif
 
-#if os(macOS)
-public extension Folder {
     /// The current user's Documents folder
     static var documents: Folder? {
         return try? .matching(.documentDirectory)
