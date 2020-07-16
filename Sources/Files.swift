@@ -240,13 +240,14 @@ public final class Storage<LocationType: Location> {
             throw LocationError(path: path, reason: .missing)
         }
     }
+
+    /// File attributes for this filesystem location.
+    public var attributes: [FileAttributeKey : Any] {
+        return (try? fileManager.attributesOfItem(atPath: path)) ?? [:]
+    }
 }
 
 fileprivate extension Storage {
-    var attributes: [FileAttributeKey : Any] {
-        return (try? fileManager.attributesOfItem(atPath: path)) ?? [:]
-    }
-
     func makeParentPath(for path: String) -> String? {
         guard path != "/" else { return nil }
         let url = URL(fileURLWithPath: path)
