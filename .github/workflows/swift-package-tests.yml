@@ -1,0 +1,37 @@
+name: Swift Package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  macOS:
+    name: macOS tests
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: swift build --verbose --enable-test-discovery --sanitize=thread
+
+      - name: Run tests
+        run: swift test --verbose --enable-test-discovery --sanitize=thread
+
+
+  linux:
+    name: macOS tests
+    runs-on: ubuntu-latest
+    container: 
+      image: swift:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: swift build --verbose --enable-test-discovery --sanitize=thread
+
+      - name: Run tests
+        run: swift test --verbose --enable-test-discovery --sanitize=thread
