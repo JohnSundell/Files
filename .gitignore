@@ -65,3 +65,9 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
+
+# I have not read before
+.DS_Store
+/.build
+/Packages
+/*.xcodeproj

@@ -918,6 +918,38 @@ public extension Folder {
         return try? .matching(.libraryDirectory)
     }
 }
+#elseif os(iOS)
+
+public extension Folder {
+    
+    static var documents: Folder? {
+        let filemgr = FileManager.default
+        let dirPaths = filemgr.urls(for: .documentDirectory, in: .userDomainMask)
+        let docsDir = dirPaths[0]
+        do {
+            let folder = try Folder.init(path: docsDir.path)
+            return folder
+        } catch let error {
+            print(error)
+            return nil
+        }
+    }
+    
+    static var library: Folder? {
+        let filemgr = FileManager.default
+        let dirPaths = filemgr.urls(for: .libraryDirectory, in: .userDomainMask)
+        let docsDir = dirPaths[0]
+        do {
+            let folder = try Folder.init(path: docsDir.path)
+            return folder
+        } catch let error {
+            print(error)
+            return nil
+        }
+    }
+    
+}
+
 #endif
 
 // MARK: - Errors
