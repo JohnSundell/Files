@@ -879,6 +879,7 @@ public extension Folder {
     func isEmpty(includingHidden includeHidden: Bool = false) -> Bool {
         var files = self.files
         files.includeHidden = includeHidden
+        
         if files.first != nil {
             return false
         }
