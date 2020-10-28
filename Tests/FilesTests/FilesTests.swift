@@ -916,8 +916,20 @@ class FilesTests: XCTestCase {
     ]
 }
 
+#if os(macOS)
+extension FilesTests {
+    func testAccessingDocumentsFolder() {
+        XCTAssertNotNil(Folder.documents, "Documents folder should be available.")
+    }
+}
+#endif
+
 #if os(iOS) || os(tvOS) || os(macOS)
 extension FilesTests {
+    func testAccessingLibraryFolder() {
+        XCTAssertNotNil(Folder.library, "Library folder should be available.")
+    }
+
     func testResolvingFolderMatchingSearchPath() {
         performTest {
             // Real file I/O
@@ -947,18 +959,6 @@ extension FilesTests {
 
             XCTAssertEqual(resolved, target)
         }
-    }
-}
-#endif
-
-#if os(macOS)
-extension FilesTests {
-    func testAccessingDocumentFolder() {
-        XCTAssertNotNil(Folder.documents, "Document folder should be available.")
-    }
-    
-    func testAccessingLibraryFolder() {
-        XCTAssertNotNil(Folder.library, "Library folder should be available.")
     }
 }
 #endif
