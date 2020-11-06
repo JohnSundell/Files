@@ -704,6 +704,32 @@ class FilesTests: XCTestCase {
             XCTAssertEqual(Folder.current, folder)
         }
     }
+
+    func testAccessingCurrentFolderWithRelativePath() {
+        performTest {
+            let folderA = try Folder(path: "./")
+            let folderB = try Folder.current.subfolder(at: "./")
+            XCTAssertEqual(folderA, folderB)
+            XCTAssertEqual(folderA, .current)
+        }
+    }
+
+    func testAccessingFileInCurrentFolderWithRelativePath() {
+        performTest {
+            let fileA = try Folder.current.createFile(named: "Test")
+            let fileB = try File(path: "./Test")
+            XCTAssertEqual(fileA, fileB)
+        }
+    }
+
+    func testAccessingParentFolderWithRelativePath() {
+        performTest {
+            let folderA = try Folder(path: "../")
+            let folderB = try Folder.current.subfolder(at: "../")
+            XCTAssertEqual(folderA, folderB)
+            XCTAssertEqual(folderA, Folder.current.parent)
+        }
+    }
     
     func testNameExcludingExtensionWithLongFileName() {
         performTest {
@@ -923,6 +949,9 @@ class FilesTests: XCTestCase {
         ("testMovingFolderHiddenContents", testMovingFolderHiddenContents),
         ("testAccessingHomeFolder", testAccessingHomeFolder),
         ("testAccessingCurrentWorkingDirectory", testAccessingCurrentWorkingDirectory),
+        ("testAccessingCurrentFolderWithRelativePath", testAccessingCurrentFolderWithRelativePath),
+        ("testAccessingFileInCurrentFolderWithRelativePath", testAccessingFileInCurrentFolderWithRelativePath),
+        ("testAccessingParentFolderWithRelativePath", testAccessingParentFolderWithRelativePath),
         ("testNameExcludingExtensionWithLongFileName", testNameExcludingExtensionWithLongFileName),
         ("testRelativePaths", testRelativePaths),
         ("testRelativePathIsAbsolutePathForNonParent", testRelativePathIsAbsolutePathForNonParent),

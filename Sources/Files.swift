@@ -210,6 +210,8 @@ public final class Storage<LocationType: Location> {
     }
 
     private func validatePath() throws {
+        path = path.removingPrefix("./")
+
         switch LocationType.kind {
         case .file:
             guard !path.isEmpty else {
@@ -234,6 +236,10 @@ public final class Storage<LocationType: Location> {
             }
 
             path.replaceSubrange(..<parentReferenceRange.upperBound, with: parentPath)
+        }
+
+        if !path.hasPrefix("/") {
+            path = fileManager.currentDirectoryPath.appendingSuffixIfNeeded("/") + path
         }
 
         guard fileManager.locationExists(at: path, kind: LocationType.kind) else {
@@ -299,7 +305,7 @@ private extension Storage where LocationType == Folder {
     }
 
     func subfolder(at folderPath: String) throws -> Folder {
-        let folderPath = path + folderPath.removingPrefix("/")
+        let folderPath = path + folderPath.removingPrefix("/").removingPrefix("./")
         let storage = try Storage(path: folderPath, fileManager: fileManager)
         return Folder(storage: storage)
     }
