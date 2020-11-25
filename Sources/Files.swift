@@ -105,6 +105,17 @@ public extension Location {
         return storage.attributes[.modificationDate] as? Date
     }
 
+    typealias ByteCount = Int
+
+    /// The size of the item in bytes, or `nil` if the information is not available.
+    var size: ByteCount? {
+        guard let size = storage.attributes[.size] as? UInt64 else {
+            return nil
+        }
+
+        return ByteCount(size)
+    }
+
     /// Initialize an instance of an existing location at a given path.
     /// - parameter path: The absolute path of the location.
     /// - throws: `LocationError` if the item couldn't be found.
