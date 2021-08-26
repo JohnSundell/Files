@@ -105,7 +105,7 @@ public extension Location {
         return storage.attributes[.modificationDate] as? Date
     }
 
-    typealias ByteCount = Int
+    typealias ByteCount = Int64
 
     /// The size of the item in bytes, or `nil` if the information is not available.
     var size: ByteCount? {
