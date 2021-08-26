@@ -328,6 +328,26 @@ class FilesTests: XCTestCase {
         }
     }
     
+    func testCheckingEmptyFolders() {
+        performTest {
+            let emptySubfolder = try folder.createSubfolder(named: "1")
+            XCTAssertTrue(emptySubfolder.isEmpty())
+            
+            let subfolderWithFile = try folder.createSubfolder(named: "2")
+            try subfolderWithFile.createFile(named: "A")
+            XCTAssertFalse(subfolderWithFile.isEmpty())
+            
+            let subfolderWithHiddenFile = try folder.createSubfolder(named: "3")
+            try subfolderWithHiddenFile.createFile(named: ".B")
+            XCTAssertTrue(subfolderWithHiddenFile.isEmpty())
+            XCTAssertFalse(subfolderWithHiddenFile.isEmpty(includingHidden: true))
+            
+            let subfolderWithFolder = try folder.createSubfolder(named: "3")
+            try subfolderWithFolder.createSubfolder(named: "4")
+            XCTAssertFalse(subfolderWithFile.isEmpty())
+        }
+    }
+
     func testMovingFiles() {
         performTest {
             try folder.createFile(named: "A")
@@ -883,6 +903,7 @@ class FilesTests: XCTestCase {
         ("testAccessingSubfolderByPath", testAccessingSubfolderByPath),
         ("testEmptyingFolder", testEmptyingFolder),
         ("testEmptyingFolderWithHiddenFiles", testEmptyingFolderWithHiddenFiles),
+        ("testCheckingEmptyFolders", testCheckingEmptyFolders),
         ("testMovingFiles", testMovingFiles),
         ("testCopyingFiles", testCopyingFiles),
         ("testCopyingFolders", testCopyingFolders),
@@ -927,8 +948,20 @@ class FilesTests: XCTestCase {
     ]
 }
 
+#if os(macOS)
+extension FilesTests {
+    func testAccessingDocumentsFolder() {
+        XCTAssertNotNil(Folder.documents, "Documents folder should be available.")
+    }
+}
+#endif
+
 #if os(iOS) || os(tvOS) || os(macOS)
 extension FilesTests {
+    func testAccessingLibraryFolder() {
+        XCTAssertNotNil(Folder.library, "Library folder should be available.")
+    }
+
     func testResolvingFolderMatchingSearchPath() {
         performTest {
             // Real file I/O
@@ -958,18 +991,6 @@ extension FilesTests {
 
             XCTAssertEqual(resolved, target)
         }
-    }
-}
-#endif
-
-#if os(macOS)
-extension FilesTests {
-    func testAccessingDocumentFolder() {
-        XCTAssertNotNil(Folder.documents, "Document folder should be available.")
-    }
-    
-    func testAccessingLibraryFolder() {
-        XCTAssertNotNil(Folder.library, "Library folder should be available.")
     }
 }
 #endif

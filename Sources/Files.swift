@@ -886,6 +886,19 @@ public extension Folder {
         folders.includeHidden = includeHidden
         try folders.delete()
     }
+    
+    func isEmpty(includingHidden includeHidden: Bool = false) -> Bool {
+        var files = self.files
+        files.includeHidden = includeHidden
+        
+        if files.first != nil {
+            return false
+        }
+
+        var folders = subfolders
+        folders.includeHidden = includeHidden
+        return folders.first == nil
+    }
 }
 
 #if os(iOS) || os(tvOS) || os(macOS)
@@ -914,11 +927,7 @@ public extension Folder {
             fileManager: fileManager
         ))
     }
-}
-#endif
 
-#if os(macOS)
-public extension Folder {
     /// The current user's Documents folder
     static var documents: Folder? {
         return try? .matching(.documentDirectory)
