@@ -82,6 +82,7 @@ Folder.library
 Folder.temporary
 Folder.home
 Folder.documents
+Folder.applicationSupport
 ```
 
 ## Installation
