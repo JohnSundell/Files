@@ -950,6 +950,10 @@ extension FilesTests {
     func testAccessingLibraryFolder() {
         XCTAssertNotNil(Folder.library, "Library folder should be available.")
     }
+    
+    func testAccessingApplicationSupportFolder() {
+        XCTAssertNotNil(Folder.applicationSupport, "Application support folder should be available.")
+    }
 
     func testResolvingFolderMatchingSearchPath() {
         performTest {
