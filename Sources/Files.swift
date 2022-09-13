@@ -23,6 +23,7 @@
  */
 
 import Foundation
+import ArgumentParser
 
 // MARK: - Locations
 
@@ -35,7 +36,7 @@ public enum LocationKind {
 }
 
 /// Protocol adopted by types that represent locations on a file system.
-public protocol Location: Equatable, CustomStringConvertible {
+public protocol Location: Equatable, CustomStringConvertible, ExpressibleByArgument {
     /// The kind of location that is being represented (see `LocationKind`).
     static var kind: LocationKind { get }
     /// The underlying storage for the item at the represented location.
@@ -368,6 +369,24 @@ public struct File: Location {
     public init(storage: Storage<File>) {
         self.storage = storage
     }
+    
+    /// Attempts to use `init(path:)` with argument as an absolute path. When that fails it attempts to
+    /// initialise relative to the current path. Finally if that fails the error is logged and it simply returns nil.
+    /// - Parameter argument: absolute or relative path to `FileManager.default.currentDirectoryPath`
+    public init?(argument: String) {
+        do {
+            try self.init(path: argument)
+        } catch {
+            do {
+                var currentURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+                currentURL = currentURL.appendingPathComponent(argument)
+                try self.init(path: currentURL.path)
+            } catch {
+                print("\(error)")
+                return nil
+            }
+        }
+    }
 }
 
 public extension File {
@@ -480,6 +499,24 @@ public struct Folder: Location {
 
     public init(storage: Storage<Folder>) {
         self.storage = storage
+    }
+    
+    /// Attempts to use `init(path:)` with argument as an absolute path. When that fails it attempts to
+    /// initialise relative to the current path. Finally if that fails the error is logged and it simply returns nil.
+    /// - Parameter argument: absolute or relative path to `FileManager.default.currentDirectoryPath`
+    public init?(argument: String) {
+        do {
+            try self.init(path: argument)
+        } catch {
+            do {
+                var currentURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+                currentURL = currentURL.appendingPathComponent(argument)
+                try self.init(path: currentURL.path)
+            } catch {
+                print("\(error)")
+                return nil
+            }
+        }
     }
 }
 

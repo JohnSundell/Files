@@ -13,9 +13,11 @@ let package = Package(
     products: [
         .library(name: "Files", targets: ["Files"])
     ],
+    dependencies: [ .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.4")],
     targets: [
         .target(
             name: "Files",
+            dependencies: [.product(name: "ArgumentParser", package: "swift-argument-parser")],
             path: "Sources"
         ),
         .testTarget(
