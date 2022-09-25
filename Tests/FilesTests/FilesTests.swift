@@ -78,6 +78,9 @@ class FilesTests: XCTestCase {
             XCTAssertFalse(folder.containsFile(at: path))
             try folder.createFile(at: path, contents: Data("Hello".utf8))
 
+            // create existing file should throw error
+            XCTAssertThrowsError(try folder.createFile(at: path))
+
             XCTAssertTrue(folder.containsFile(at: path))
             XCTAssertTrue(folder.containsSubfolder(named: "a"))
             XCTAssertTrue(folder.containsSubfolder(at: "a/b"))
@@ -153,6 +156,9 @@ class FilesTests: XCTestCase {
 
             XCTAssertFalse(folder.containsSubfolder(at: path))
             try folder.createSubfolder(at: path).createFile(named: "d.txt")
+
+            // create existing folder should throw
+            XCTAssertThrowsError(try folder.createSubfolder(at: path))
 
             XCTAssertTrue(folder.containsSubfolder(at: path))
             XCTAssertTrue(folder.containsSubfolder(named: "a"))
@@ -332,17 +338,17 @@ class FilesTests: XCTestCase {
         performTest {
             let emptySubfolder = try folder.createSubfolder(named: "1")
             XCTAssertTrue(emptySubfolder.isEmpty())
-            
+
             let subfolderWithFile = try folder.createSubfolder(named: "2")
             try subfolderWithFile.createFile(named: "A")
             XCTAssertFalse(subfolderWithFile.isEmpty())
-            
+
             let subfolderWithHiddenFile = try folder.createSubfolder(named: "3")
             try subfolderWithHiddenFile.createFile(named: ".B")
             XCTAssertTrue(subfolderWithHiddenFile.isEmpty())
             XCTAssertFalse(subfolderWithHiddenFile.isEmpty(includingHidden: true))
-            
-            let subfolderWithFolder = try folder.createSubfolder(named: "3")
+
+            let subfolderWithFolder = try folder.createSubfolder(named: "4")
             try subfolderWithFolder.createSubfolder(named: "4")
             XCTAssertFalse(subfolderWithFile.isEmpty())
         }
