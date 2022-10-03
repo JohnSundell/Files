@@ -25,6 +25,13 @@
 import Foundation
 import XCTest
 import Files
+import ArgumentParser
+
+struct DoMagic: ParsableCommand {
+    @Option private var folder: Folder?
+    @Option private var file: File?
+}
+
 
 class FilesTests: XCTestCase {
     private var folder: Folder!
