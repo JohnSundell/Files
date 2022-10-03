@@ -36,7 +36,7 @@ public enum LocationKind {
 }
 
 /// Protocol adopted by types that represent locations on a file system.
-public protocol Location: Equatable, CustomStringConvertible, ExpressibleByArgument {
+public protocol Location: Equatable, CustomStringConvertible, ExpressibleByArgument, Codable {
     /// The kind of location that is being represented (see `LocationKind`).
     static var kind: LocationKind { get }
     /// The underlying storage for the item at the represented location.
@@ -369,7 +369,15 @@ public struct File: Location {
     public init(storage: Storage<File>) {
         self.storage = storage
     }
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    self = try File(path: container.decode(String.self))
+  }
     
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(path)
+  }
     /// Attempts to use `init(path:)` with argument as an absolute path. When that fails it attempts to
     /// initialise relative to the current path. Finally if that fails the error is logged and it simply returns nil.
     /// - Parameter argument: absolute or relative path to `FileManager.default.currentDirectoryPath`
@@ -499,6 +507,16 @@ public struct Folder: Location {
 
     public init(storage: Storage<Folder>) {
         self.storage = storage
+    }
+  
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self = try Folder(path: container.decode(String.self))
+    }
+      
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(path)
     }
     
     /// Attempts to use `init(path:)` with argument as an absolute path. When that fails it attempts to
