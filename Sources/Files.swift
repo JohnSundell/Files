@@ -390,16 +390,22 @@ public struct File: Location {
   /// initialise relative to the current path. Finally if that fails the error is logged and it simply returns nil.
   /// - Parameter argument: absolute or relative path to `FileManager.default.currentDirectoryPath`
   public init?(argument: String) {
+    try? self.init(possiblyRelativePath: argument)
+  }
+  
+  /// Attempts to use `init(path:)` with argument as an absolute path. When that fails it attempts to
+  /// initialise relative to the current path. Finally if that fails the error is logged and it simply returns nil.
+  /// - Parameter possiblyRelativePath: absolute or relative path to `FileManager.default.currentDirectoryPath`
+  public init(possiblyRelativePath: String) throws {
     do {
-      try self.init(path: argument)
+      try self.init(path: possiblyRelativePath)
     } catch {
       do {
         var currentURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        currentURL = currentURL.appendingPathComponent(argument)
+        currentURL = currentURL.appendingPathComponent(possiblyRelativePath)
         try self.init(path: currentURL.path)
       } catch {
-        print("\(error)")
-        return nil
+        throw error
       }
     }
   }
