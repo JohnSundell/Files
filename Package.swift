@@ -13,7 +13,6 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.4"),
-    .package(url: "https://github.com/airbnb/swift", from: "1.0.0"),
   ],
   targets: [
     .target(
