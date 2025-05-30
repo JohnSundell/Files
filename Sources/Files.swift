@@ -736,6 +736,9 @@ public extension Folder {
     /// - throws: `WriteError` if the operation couldn't be completed.
     @discardableResult
     func createSubfolder(at path: String) throws -> Folder {
+        guard !containsSubfolder(at: path) else {
+          throw FilesError(path: path, reason: LocationErrorReason.alreadyExists)
+        }
         return try storage.createSubfolder(at: path)
     }
 
@@ -745,6 +748,9 @@ public extension Folder {
     /// - throws: `WriteError` if the operation couldn't be completed.
     @discardableResult
     func createSubfolder(named name: String) throws -> Folder {
+        guard !containsSubfolder(named: name) else {
+          throw FilesError(path: path + name.removingPrefix("/"), reason: LocationErrorReason.alreadyExists)
+        }
         return try storage.createSubfolder(at: name)
     }
 
@@ -803,6 +809,9 @@ public extension Folder {
     /// - throws: `WriteError` if the operation couldn't be completed.
     @discardableResult
     func createFile(at path: String, contents: Data? = nil) throws -> File {
+        guard !containsFile(at: path) else {
+          throw FilesError(path: path, reason: LocationErrorReason.alreadyExists)
+        }
         return try storage.createFile(at: path, contents: contents)
     }
 
@@ -813,6 +822,9 @@ public extension Folder {
     /// - throws: `WriteError` if the operation couldn't be completed.
     @discardableResult
     func createFile(named fileName: String, contents: Data? = nil) throws -> File {
+        guard !containsFile(named: fileName) else {
+          throw FilesError(path: path + fileName.removingPrefix("/"), reason: LocationErrorReason.alreadyExists)
+        }
         return try storage.createFile(at: fileName, contents: contents)
     }
 
@@ -962,6 +974,8 @@ extension FilesError: CustomStringConvertible {
 public enum LocationErrorReason {
     /// The location couldn't be found.
     case missing
+    /// The location already has file/folder exists.
+    case alreadyExists
     /// An empty path was given when refering to a file.
     case emptyFilePath
     /// The user attempted to rename the file system's root folder.
