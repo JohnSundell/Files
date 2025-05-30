@@ -540,6 +540,16 @@ class FilesTests: XCTestCase {
             XCTAssertTrue(file.modificationDate.map(Calendar.current.isDateInToday) ?? false)
         }
     }
+
+    func testSize() {
+        performTest {
+            let subfolder = try folder.createSubfolder(named: "Folder")
+            XCTAssertNotNil(subfolder.size)
+
+            let file = try folder.createFile(named: "File")
+            XCTAssertNotNil(file.size)
+        }
+    }
     
     func testParent() {
         performTest {
@@ -906,6 +916,7 @@ class FilesTests: XCTestCase {
         ("testFirstAndLastInFileSequence", testFirstAndLastInFileSequence),
         ("testConvertingFileSequenceToRecursive", testConvertingFileSequenceToRecursive),
         ("testModificationDate", testModificationDate),
+        ("testSize", testSize),
         ("testParent", testParent),
         ("testRootFolderParentIsNil", testRootFolderParentIsNil),
         ("testRootSubfolderParentIsRoot", testRootSubfolderParentIsRoot),
