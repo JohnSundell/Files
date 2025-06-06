@@ -76,7 +76,7 @@ public extension Location {
     var nameExcludingExtension: String {
         let components = name.split(separator: ".")
         guard components.count > 1 else { return name }
-        return components.dropLast().joined()
+        return components.dropLast().joined(separator: ".")
     }
 
     /// The file extension of the item at the location.
