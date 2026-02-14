@@ -79,6 +79,19 @@ public extension Location {
         return components.dropLast().joined()
     }
 
+    /// Disco: The name of the location, excluding its `extension`.
+    var baseName: String {
+        get {
+            let components = name.split(separator: ".")
+            guard components.count > 1 else { return name }
+            return components.dropLast().joined()
+        }
+        set {
+            try? rename(to: newValue, keepExtension: true)
+        }
+    }
+    
+
     /// The file extension of the item at the location.
     var `extension`: String? {
         let components = name.split(separator: ".")
@@ -406,9 +419,15 @@ public extension File {
     func append(_ data: Data) throws {
         do {
             let handle = try FileHandle(forWritingTo: url)
-            handle.seekToEndOfFile()
-            handle.write(data)
-            handle.closeFile()
+            if #available(macOS 10.15.4, *) {
+                _ = try handle.seekToEnd()
+                try handle.write(contentsOf: data)
+                try handle.close()
+            } else {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                handle.closeFile()
+            }
         } catch {
             throw WriteError(path: path, reason: .writeFailed(error))
         }
@@ -466,7 +485,7 @@ import AppKit
 public extension File {
     /// Open the file.
     func open() {
-        NSWorkspace.shared.openFile(path)
+        NSWorkspace.shared.open(url)
     }
 }
 
