@@ -47,6 +47,17 @@ public protocol Location: Equatable, CustomStringConvertible {
     init(storage: Storage<Self>)
 }
 
+/// Protocol adopted by locations that represent files.
+public protocol FileLocation: Location {}
+
+public extension FileLocation {
+    /// The file size, in bytes. Returns `0` if the size couldn't be determined.
+    var size: UInt64 {
+        let number = storage.attributes[.size] as? NSNumber
+        return number?.uint64Value ?? 0
+    }
+}
+
 public extension Location {
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.storage.path == rhs.storage.path
@@ -78,6 +89,19 @@ public extension Location {
         guard components.count > 1 else { return name }
         return components.dropLast().joined()
     }
+
+    /// Disco: The name of the location, excluding its `extension`.
+    var baseName: String {
+        get {
+            let components = name.split(separator: ".")
+            guard components.count > 1 else { return name }
+            return components.dropLast().joined()
+        }
+        set {
+            try? rename(to: newValue, keepExtension: true)
+        }
+    }
+    
 
     /// The file extension of the item at the location.
     var `extension`: String? {
@@ -364,7 +388,7 @@ private extension Storage where LocationType == Folder {
 /// Type that represents a file on disk. You can either reference an existing
 /// file by initializing an instance with a `path`, or you can create new files
 /// using the various `createFile...` APIs available on `Folder`.
-public struct File: Location {
+public struct File: Location, FileLocation {
     public let storage: Storage<File>
 
     public init(storage: Storage<File>) {
@@ -406,9 +430,15 @@ public extension File {
     func append(_ data: Data) throws {
         do {
             let handle = try FileHandle(forWritingTo: url)
-            handle.seekToEndOfFile()
-            handle.write(data)
-            handle.closeFile()
+            if #available(macOS 10.15.4, *) {
+                _ = try handle.seekToEnd()
+                try handle.write(contentsOf: data)
+                try handle.close()
+            } else {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                handle.closeFile()
+            }
         } catch {
             throw WriteError(path: path, reason: .writeFailed(error))
         }
@@ -466,7 +496,7 @@ import AppKit
 public extension File {
     /// Open the file.
     func open() {
-        NSWorkspace.shared.openFile(path)
+        NSWorkspace.shared.open(url)
     }
 }
 

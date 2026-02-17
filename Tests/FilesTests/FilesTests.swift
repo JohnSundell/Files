@@ -197,6 +197,14 @@ class FilesTests: XCTestCase {
             try assert(nonIntFile.readAsInt(), throwsErrorOfType: ReadError.self)
         }
     }
+
+    func testFileSize() {
+        performTest {
+            let data = Data("Hello".utf8)
+            let file = try folder.createFile(named: "size.txt", contents: data)
+            XCTAssertEqual(file.size, UInt64(data.count))
+        }
+    }
     
     func testRenamingFile() {
         performTest {
