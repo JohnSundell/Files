@@ -47,6 +47,17 @@ public protocol Location: Equatable, CustomStringConvertible {
     init(storage: Storage<Self>)
 }
 
+/// Protocol adopted by locations that represent files.
+public protocol FileLocation: Location {}
+
+public extension FileLocation {
+    /// The file size, in bytes. Returns `0` if the size couldn't be determined.
+    var size: UInt64 {
+        let number = storage.attributes[.size] as? NSNumber
+        return number?.uint64Value ?? 0
+    }
+}
+
 public extension Location {
     static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.storage.path == rhs.storage.path
@@ -377,7 +388,7 @@ private extension Storage where LocationType == Folder {
 /// Type that represents a file on disk. You can either reference an existing
 /// file by initializing an instance with a `path`, or you can create new files
 /// using the various `createFile...` APIs available on `Folder`.
-public struct File: Location {
+public struct File: Location, FileLocation {
     public let storage: Storage<File>
 
     public init(storage: Storage<File>) {
